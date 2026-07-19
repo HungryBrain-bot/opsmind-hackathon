@@ -25,6 +25,12 @@ Unlike traditional AI assistants that answer immediately, OpsMind investigates y
 
 ---
 
+## 🎥 Demo
+
+![OpsMind Demo](docs/images/demo.gif)
+
+---
+
 # Why OpsMind?
 
 During production incidents engineers often spend 30–90 minutes switching between:
