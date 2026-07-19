@@ -72,3 +72,6 @@
 .decision-evidence .supports{background:rgba(49,208,170,.1);color:var(--green)}
 .decision-evidence .contradicts{background:rgba(255,107,122,.1);color:#ff9ca7}
 @media(max-width:900px){.decision-trace-list{grid-template-columns:1fr}}
+
+/* Report export */
+.report-button{margin-left:8px;min-width:108px}.report-button:disabled{opacity:.45;cursor:not-allowed}

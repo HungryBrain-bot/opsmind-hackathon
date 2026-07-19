@@ -11,4 +11,4 @@ def test_runtime_defaults_to_offline_fixture() -> None:
     assert payload["mode"] == "offline"
     assert payload["planner_provider"] == "fixture"
     assert payload["api_key_configured"] is False
-    assert payload["version"] == "1.2.0"
+    assert payload["version"] == "1.3.0"
