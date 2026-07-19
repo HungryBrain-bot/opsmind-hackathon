@@ -4,7 +4,7 @@ from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request
 from fastapi.responses import PlainTextResponse, StreamingResponse
 
 from app.core.settings import Settings, get_settings
-from app.investigation.demo_engine import DemoInvestigationEngine
+from app.investigation.engine_factory import InvestigationEngineFactory
 from app.investigation.orchestrator import InvestigationOrchestrator
 from app.investigation.explainability import DecisionTraceBuilder
 from app.investigation.reporting import InvestigationReportBuilder
@@ -29,7 +29,7 @@ def get_engine(
     settings: Settings = Depends(get_settings),
     store: InvestigationStore = Depends(get_store),
 ) -> InvestigationOrchestrator:
-    engine = DemoInvestigationEngine(settings, store)
+    engine = InvestigationEngineFactory(settings, store).build()
     return InvestigationOrchestrator(engine)
 
 
