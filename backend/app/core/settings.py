@@ -10,6 +10,7 @@ class Settings(BaseSettings):
     max_investigation_rounds: int = 3
     sufficiency_threshold: float = 0.80
     demo_stage_delay_seconds: float = 0.8
+    investigation_storage_path: str = "data/investigations"
 
     planner_provider: str = "fixture"  # fixture | openai
     openai_api_key: str | None = None

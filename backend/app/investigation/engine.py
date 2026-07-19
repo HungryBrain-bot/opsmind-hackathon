@@ -50,6 +50,7 @@ class InvestigationEngine:
             status=InvestigationStatus.NEW,
             environment=request.environment,
             priority=request.priority,
+            scenario_id=request.scenario_id,
             current_phase="Queued",
             progress_percent=0,
             missing_evidence=["Investigation plan"],
@@ -80,6 +81,7 @@ class InvestigationEngine:
                 problem=result.problem,
                 environment=result.environment,
                 priority=result.priority,
+                scenario_id=result.scenario_id,
             )
             plan = await self.planner.create_plan(request)
             result.planner_usage = self.planner.last_usage.model_copy(deep=True)
@@ -251,7 +253,7 @@ class InvestigationEngine:
 
         items = await self.tools.execute(
             requirement.preferred_tool,
-            {"environment": result.environment, "problem": result.problem},
+            {"environment": result.environment, "problem": result.problem, "scenario_id": result.scenario_id},
         )
         if requirement.preferred_tool not in result.tools_used:
             result.tools_used.append(requirement.preferred_tool)
@@ -287,15 +289,10 @@ class InvestigationEngine:
         if sufficient:
             leading.status = HypothesisStatus.SUPPORTED
             result.verdict_evidence_ids = sorted(set(leading.supporting_evidence_ids))
-            result.verdict = (
-                "HF-PROD-02 stopped forwarding because its client certificate expired, causing "
-                "TLS handshakes to IDX-CLUSTER-01:9997 to fail."
-            )
-            result.recommended_actions = [
-                "Renew and deploy CERT-HF-PROD-02 through the approved change process.",
-                "Validate TLS connectivity and forwarding freshness after deployment.",
-                "Add certificate-expiry monitoring to prevent recurrence.",
-            ]
+            from app.investigation.scenarios import SCENARIOS
+            scenario = SCENARIOS.get(result.scenario_id, SCENARIOS["certificate_expiry"])
+            result.verdict = scenario.verdict
+            result.recommended_actions = scenario.recommended_actions
             result.status = InvestigationStatus.COMPLETED
             result.current_phase = "Verdict ready"
             result.next_action = "Human review and approved remediation"

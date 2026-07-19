@@ -7,3 +7,19 @@ __pycache__/
 .env
 .env.*
 !.env.example
+
+# Runtime investigation history
+data/investigations/*
+!data/investigations/.gitkeep
+
+# Editors and operating systems
+.DS_Store
+Thumbs.db
+.idea/
+.vscode/
+
+# Coverage and build output
+.coverage
+htmlcov/
+build/
+dist/

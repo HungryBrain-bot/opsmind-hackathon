@@ -41,6 +41,7 @@ class InvestigationRequest(BaseModel):
     problem: str = Field(min_length=10, max_length=1000)
     environment: str = "Production"
     priority: str = "High"
+    scenario_id: str = "certificate_expiry"
 
 
 class TimelineEvent(BaseModel):
@@ -63,6 +64,7 @@ class InvestigationResult(BaseModel):
     status: InvestigationStatus
     environment: str
     priority: str
+    scenario_id: str = "certificate_expiry"
     current_phase: str
     progress_percent: int = Field(ge=0, le=100)
     round_number: int = 0

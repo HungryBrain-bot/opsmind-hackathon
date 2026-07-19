@@ -1,36 +1,56 @@
 # Changelog
 
-## 1.3.0
+All notable changes to OpsMind are documented here. Versions are listed newest first.
 
-- Added structured and Markdown investigation report export
-- Added decision trace and evidence ledger to reports
-- Added Download report and Copy summary UI actions
-- Added report API tests
+## 1.6.0 — Incident Experience
 
-## 1.2.0
+- Replaced demo dataset language with realistic production incident cases.
+- Added incident IDs, affected systems, monitoring sources, regions, priorities, and contextual summaries.
+- Kept root causes hidden until OpsMind completes its evidence-backed investigation.
+- Improved responsive layout and visual hierarchy for the investigation workspace.
+- Updated application and package metadata to version 1.6.0.
 
-- Added decision trace for the selected hypothesis
-- Added explicit why-not-selected explanations for alternatives
-- Added supporting and contradicting evidence references
-- Added decision-trace API and UI panel
-- Added decision trace tests
+## 1.5.0 — Multi-Incident Investigation Engine
 
-## 1.1.0
+- Added four Heavy Forwarder incident evidence paths: certificate expiry, firewall or network block, `outputs.conf` misconfiguration, and disk-full or blocked queues.
+- Added incident-aware structured investigation events and verdict generation.
+- Added Jira historical-incident evidence to demonstrate enterprise-memory correlation.
+- Preserved one shared investigation engine across all incident cases.
 
-- Added ordered confidence history to every hypothesis
-- Added evidence-linked reasons for confidence changes
-- Added explicit rejected-hypothesis explanations
-- Added expandable confidence evolution UI
-- Added confidence history tests
+## 1.4.0 — Investigation History
 
-## 1.0.0
+- Persisted terminal investigation snapshots and Markdown reports atomically.
+- Added searchable and filterable Investigation History APIs.
+- Added Investigation History UI with reopen, download, and delete actions.
+- Preserved hypotheses, evidence, confidence evolution, timeline, verdict, and decision-trace inputs.
 
-- Preserved original Sprint 5 Investigation Workspace
-- Added evidence sufficiency view
-- Added investigation plan and read-only tool view
-- Added evidence graph
-- Added judge mode
-- Added Investigation Pack API
-- Added timeline and notebook APIs
-- Improved frontend error messages
-- Retained the expired-certificate golden scenario
+## 1.3.0 — Investigation Reports
+
+- Added structured and Markdown investigation report export.
+- Added decision trace and evidence ledger to reports.
+- Added Download Report and Copy Summary UI actions.
+- Added report API tests.
+
+## 1.2.0 — Decision Trace
+
+- Added decision trace for the selected hypothesis.
+- Added explicit “why not selected” explanations for alternatives.
+- Added supporting and contradicting evidence references.
+- Added decision-trace API and UI panel.
+- Added decision-trace tests.
+
+## 1.1.0 — Confidence Evolution
+
+- Added ordered confidence history to every hypothesis.
+- Added evidence-linked reasons for confidence changes.
+- Added explicit rejected-hypothesis explanations.
+- Added expandable confidence-evolution UI.
+- Added confidence-history tests.
+
+## 1.0.0 — Investigation Engine
+
+- Preserved the original Investigation Workspace experience.
+- Added evidence sufficiency, investigation plans, and read-only tool views.
+- Added evidence graph and Judge Mode.
+- Added Investigation Pack, timeline, and notebook APIs.
+- Added clearer frontend failure reporting.

@@ -22,6 +22,28 @@ const copyReportButton=document.getElementById('copyReportButton');
 let eventSource=null;
 let lastSnapshot=null;
 
+const incidentCases={
+  certificate_expiry:{id:'INC-2026-0719-001',title:'Heavy Forwarder stopped forwarding logs',summary:'Production monitoring detected a sustained ingestion outage from a critical Heavy Forwarder.',host:'HF-PROD-02',source:'Splunk Monitoring',region:'East US',problem:'Why is HF-PROD-02 not forwarding logs to the Splunk indexer cluster?'},
+  firewall_block:{id:'INC-2026-0718-014',title:'No events reaching indexer cluster',summary:'Forwarder health checks are passing, but production events have not reached the receiving tier for 22 minutes.',host:'HF-PROD-04',source:'Ingestion Health Alert',region:'West Europe',problem:'Why are events from HF-PROD-04 not reaching the Splunk indexer cluster?'},
+  outputs_misconfiguration:{id:'INC-2026-0716-003',title:'Forwarding failure after maintenance',summary:'Log forwarding stopped shortly after an approved deployment-server maintenance window.',host:'HF-PROD-07',source:'Change Correlation',region:'Central India',problem:'Why did HF-PROD-07 stop forwarding after the maintenance window?'},
+  disk_full:{id:'INC-2026-0714-027',title:'Ingestion delay and growing queues',summary:'Ingestion latency is increasing while the Heavy Forwarder sending queues continue to grow.',host:'HF-PROD-09',source:'Queue Saturation Alert',region:'South India',problem:'Why is HF-PROD-09 experiencing delayed ingestion and growing forwarding queues?'}
+};
+
+function updateIncidentContext(){
+  const selected=document.getElementById('scenarioSelect').value;
+  const incident=incidentCases[selected]||incidentCases.certificate_expiry;
+  document.getElementById('incidentTitle').textContent=incident.title;
+  document.getElementById('incidentSummary').textContent=incident.summary;
+  document.getElementById('caseId').textContent=incident.id;
+  document.getElementById('caseHost').textContent=incident.host;
+  document.getElementById('caseSource').textContent=incident.source;
+  document.getElementById('caseRegion').textContent=incident.region;
+  document.getElementById('title').textContent=incident.title;
+}
+
+document.getElementById('scenarioSelect').addEventListener('change',updateIncidentContext);
+updateIncidentContext();
+
 function pct(v){return `${Math.round((v||0)*100)}%`;}
 function escapeHtml(value=''){return String(value).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));}
 
@@ -267,11 +289,16 @@ runButton.addEventListener('click',async()=>{
     const response=await fetch('/api/v1/investigations',{
       method:'POST',
       headers:{'Content-Type':'application/json'},
-      body:JSON.stringify({
-        problem:'Why is HF-PROD-02 not forwarding logs to the Splunk indexer cluster?',
-        environment:'Production',
-        priority:'High'
-      })
+      body:JSON.stringify((()=>{
+        const scenarioId=document.getElementById('scenarioSelect').value;
+        const incident=incidentCases[scenarioId]||incidentCases.certificate_expiry;
+        return {
+          problem:incident.problem,
+          environment:'Production',
+          priority:'High',
+          scenario_id:scenarioId
+        };
+      })())
     });
     if(!response.ok){
       const detail=await response.text();
@@ -301,3 +328,67 @@ document.querySelectorAll('.nav-item').forEach(button=>button.addEventListener('
   button.classList.add('active');
   if(button.dataset.section==='graph')document.getElementById('graphButton').click();
 }));
+
+// v1.4 — durable Investigation History
+const historyModal=document.getElementById('historyModal');
+const historyList=document.getElementById('historyList');
+const historySearch=document.getElementById('historySearch');
+const historyStatus=document.getElementById('historyStatus');
+const historyEnvironment=document.getElementById('historyEnvironment');
+const historyPriority=document.getElementById('historyPriority');
+let historyDebounce=null;
+
+function historyParams(){
+  const params=new URLSearchParams();
+  if(historySearch.value.trim())params.set('query',historySearch.value.trim());
+  if(historyStatus.value)params.set('status',historyStatus.value);
+  if(historyEnvironment.value)params.set('environment',historyEnvironment.value);
+  if(historyPriority.value)params.set('priority',historyPriority.value);
+  return params.toString();
+}
+
+async function loadHistory(){
+  historyList.innerHTML='<p class="empty">Loading stored investigations…</p>';
+  try{
+    const response=await fetch(`/api/v1/investigations/history?${historyParams()}`);
+    if(!response.ok)throw new Error(`HTTP ${response.status}`);
+    const items=await response.json();
+    historyList.innerHTML=items.length?items.map(item=>`
+      <article class="history-row">
+        <div><h3>${escapeHtml(item.root_cause||item.problem)}</h3><p>${escapeHtml(item.problem)}<br><code>${escapeHtml(item.investigation_id)}</code> · ${new Date(item.updated_at).toLocaleString()}</p></div>
+        <div class="history-meta"><span>Status</span><strong>${escapeHtml(item.status)}</strong></div>
+        <div class="history-meta"><span>Confidence</span><strong>${pct(item.confidence)}</strong></div>
+        <div class="history-meta"><span>Evidence</span><strong>${item.evidence_count}</strong></div>
+        <div class="history-actions">
+          <button class="secondary" onclick="openHistoricalInvestigation('${item.investigation_id}')">Open</button>
+          <a class="secondary" href="/api/v1/investigations/history/${item.investigation_id}/report.md">Download</a>
+          <button class="ghost danger" onclick="deleteHistoricalInvestigation('${item.investigation_id}')">Delete</button>
+        </div>
+      </article>`).join(''):'<p class="empty">No stored investigations match these filters. Complete an investigation to create operational memory.</p>';
+  }catch(error){historyList.innerHTML=`<p class="empty">Could not load history: ${escapeHtml(error.message)}</p>`;}
+}
+
+async function openHistoricalInvestigation(id){
+  const response=await fetch(`/api/v1/investigations/history/${id}`);
+  if(!response.ok){alert('Stored investigation could not be opened.');return;}
+  const data=await response.json();
+  render(data);
+  historyModal.classList.remove('open');
+  document.getElementById('title').textContent=data.problem;
+  window.scrollTo({top:0,behavior:'smooth'});
+}
+
+async function deleteHistoricalInvestigation(id){
+  if(!confirm(`Delete stored investigation ${id}?`))return;
+  const response=await fetch(`/api/v1/investigations/history/${id}`,{method:'DELETE'});
+  if(!response.ok){alert('Investigation could not be deleted.');return;}
+  await loadHistory();
+}
+
+window.openHistoricalInvestigation=openHistoricalInvestigation;
+window.deleteHistoricalInvestigation=deleteHistoricalInvestigation;
+document.getElementById('closeHistory').addEventListener('click',()=>historyModal.classList.remove('open'));
+document.getElementById('refreshHistory').addEventListener('click',loadHistory);
+[historyStatus,historyEnvironment,historyPriority].forEach(x=>x.addEventListener('change',loadHistory));
+historySearch.addEventListener('input',()=>{clearTimeout(historyDebounce);historyDebounce=setTimeout(loadHistory,250);});
+document.querySelector('[data-section="history"]').addEventListener('click',()=>{historyModal.classList.add('open');loadHistory();});
