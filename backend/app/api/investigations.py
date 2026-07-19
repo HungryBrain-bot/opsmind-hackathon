@@ -8,12 +8,16 @@ from app.investigation.engine import InvestigationEngine
 from app.investigation.explainability import DecisionTraceBuilder
 from app.investigation.reporting import InvestigationReportBuilder
 from app.investigation.store import InvestigationNotFoundError, InvestigationStore
+from app.storage.file_repository import FileInvestigationRepository
+from app.storage.models import InvestigationHistoryItem
 from app.schemas.explainability import InvestigationDecisionTrace
 from app.schemas.investigation import InvestigationRequest, InvestigationResult, InvestigationStatus
 from app.schemas.report import InvestigationReport
 
 router = APIRouter(prefix="/investigations", tags=["investigations"])
-_store = InvestigationStore()
+_settings = get_settings()
+_repository = FileInvestigationRepository(_settings.investigation_storage_path)
+_store = InvestigationStore(_repository)
 
 
 def get_store() -> InvestigationStore:
@@ -25,6 +29,49 @@ def get_engine(
     store: InvestigationStore = Depends(get_store),
 ) -> InvestigationEngine:
     return InvestigationEngine(settings, store)
+
+
+
+
+@router.get("/history", response_model=list[InvestigationHistoryItem])
+async def list_investigation_history(
+    query: str | None = None,
+    status: str | None = None,
+    environment: str | None = None,
+    priority: str | None = None,
+    root_cause: str | None = None,
+) -> list[InvestigationHistoryItem]:
+    return _repository.list(query, status, environment, priority, root_cause)
+
+
+@router.get("/history/{investigation_id}", response_model=InvestigationResult)
+async def get_historical_investigation(investigation_id: str) -> InvestigationResult:
+    try:
+        return _repository.get(investigation_id)
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail="Investigation not found") from exc
+
+
+@router.get("/history/{investigation_id}/report.md")
+async def download_historical_report(investigation_id: str) -> PlainTextResponse:
+    try:
+        content = _repository.get_report(investigation_id)
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail="Investigation report not found") from exc
+    filename = f"opsmind-investigation-{investigation_id}.md"
+    return PlainTextResponse(
+        content,
+        media_type="text/markdown; charset=utf-8",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )
+
+
+@router.delete("/history/{investigation_id}", status_code=204)
+async def delete_historical_investigation(investigation_id: str) -> None:
+    try:
+        _repository.delete(investigation_id)
+    except KeyError as exc:
+        raise HTTPException(status_code=404, detail="Investigation not found") from exc
 
 
 @router.post("", response_model=InvestigationResult, status_code=202)

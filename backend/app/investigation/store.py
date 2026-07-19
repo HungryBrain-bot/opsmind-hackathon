@@ -1,7 +1,9 @@
 import asyncio
 from copy import deepcopy
 
-from app.schemas.investigation import InvestigationEvent, InvestigationResult
+from app.investigation.reporting import InvestigationReportBuilder
+from app.schemas.investigation import InvestigationEvent, InvestigationResult, InvestigationStatus
+from app.storage.repository import InvestigationRepository
 
 
 class InvestigationNotFoundError(KeyError):
@@ -9,9 +11,10 @@ class InvestigationNotFoundError(KeyError):
 
 
 class InvestigationStore:
-    """In-memory Sprint 2 store with replayable event history."""
+    """Live in-memory state with optional durable history for terminal investigations."""
 
-    def __init__(self) -> None:
+    def __init__(self, repository: InvestigationRepository | None = None) -> None:
+        self.repository = repository
         self._results: dict[str, InvestigationResult] = {}
         self._events: dict[str, list[InvestigationEvent]] = {}
         self._conditions: dict[str, asyncio.Condition] = {}
@@ -26,15 +29,27 @@ class InvestigationStore:
     async def get(self, investigation_id: str) -> InvestigationResult:
         async with self._lock:
             result = self._results.get(investigation_id)
-            if result is None:
-                raise InvestigationNotFoundError(investigation_id)
-            return deepcopy(result)
+            if result is not None:
+                return deepcopy(result)
+        if self.repository and self.repository.exists(investigation_id):
+            try:
+                return self.repository.get(investigation_id)
+            except KeyError as exc:
+                raise InvestigationNotFoundError(investigation_id) from exc
+        raise InvestigationNotFoundError(investigation_id)
 
     async def update(self, result: InvestigationResult) -> None:
         async with self._lock:
             if result.investigation_id not in self._results:
                 raise InvestigationNotFoundError(result.investigation_id)
             self._results[result.investigation_id] = deepcopy(result)
+        if self.repository and result.status in {
+            InvestigationStatus.COMPLETED,
+            InvestigationStatus.INCONCLUSIVE,
+            InvestigationStatus.FAILED,
+        }:
+            report = InvestigationReportBuilder().to_markdown(result)
+            self.repository.save(result, report)
 
     async def append_event(self, event: InvestigationEvent) -> None:
         condition = self._conditions.get(event.investigation_id)

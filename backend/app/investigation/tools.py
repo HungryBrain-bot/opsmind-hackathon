@@ -5,7 +5,7 @@ import os
 import sys
 
 from app.core.settings import Settings
-from app.investigation.fixtures import heavy_forwarder_evidence
+from app.investigation.scenarios import scenario_evidence
 from app.schemas.evidence import Evidence
 
 ToolHandler = Callable[[dict], Awaitable[list[Evidence]]]
@@ -24,13 +24,8 @@ class ToolRegistry:
 
     def __init__(self, settings: Settings | None = None) -> None:
         self.settings = settings or Settings()
-        evidence = {item.id: item for item in heavy_forwarder_evidence()}
         self._handlers: dict[str, ToolHandler] = {
-            "query_splunk_internal_logs": self._static([evidence["E-001"]]),
-            "get_certificate_status": self._static([evidence["E-002"]]),
-            "search_historical_incidents": self._static([evidence["E-003"]]),
-            "get_component_relationships": self._static([evidence["E-004"]]),
-            "get_heavy_forwarder_health": self._static([evidence["E-005"], evidence["E-006"]]),
+            name: self._scenario_handler(name) for name in self.TOOL_NAMES
         }
 
     def names(self) -> list[str]:
@@ -73,8 +68,9 @@ class ToolRegistry:
         return [Evidence.model_validate(item) for item in payload]
 
     @staticmethod
-    def _static(items: list[Evidence]) -> ToolHandler:
-        async def handler(_: dict) -> list[Evidence]:
-            return [item.model_copy(deep=True) for item in items]
+    def _scenario_handler(name: str) -> ToolHandler:
+        async def handler(arguments: dict) -> list[Evidence]:
+            scenario_id = arguments.get("scenario_id", "certificate_expiry")
+            return [item.model_copy(deep=True) for item in scenario_evidence(scenario_id) if item.source == name]
 
         return handler

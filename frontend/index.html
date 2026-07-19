@@ -12,11 +12,12 @@
     <nav>
       <button class="nav-item active" data-section="overview">⌂ <span>Overview</span></button>
       <button class="nav-item" data-section="investigations">⌕ <span>Investigations</span></button>
+      <button class="nav-item" data-section="history">◷ <span>Investigation History</span></button>
       <button class="nav-item" data-section="graph">◇ <span>Evidence Graph</span></button>
       <button class="nav-item" data-section="integrations">⌁ <span>Integrations</span></button>
       <button class="nav-item" data-section="settings">⚙ <span>Settings</span></button>
     </nav>
-    <div class="sidebar-footer">Judge-ready dual mode<br><strong>OpsMind v1.0</strong></div>
+    <div class="sidebar-footer">Judge-ready dual mode<br><strong>OpsMind v1.6</strong></div>
   </aside>
 
   <main>
@@ -40,6 +41,33 @@
       <div><span>Environment</span><strong>Production</strong></div>
       <div><span>Priority</span><strong class="priority">High</strong></div>
       <div><span>Current phase</span><strong id="currentPhase">Ready</strong></div>
+    </section>
+
+
+    <section class="incident-card card">
+      <div class="incident-card-heading">
+        <div>
+          <p class="eyebrow">OPEN INVESTIGATION</p>
+          <h2 id="incidentTitle">Heavy Forwarder stopped forwarding logs</h2>
+          <p id="incidentSummary" class="incident-summary">Production monitoring detected a sustained ingestion outage from a critical Heavy Forwarder.</p>
+        </div>
+        <div class="incident-picker">
+          <label for="scenarioSelect">Active incident</label>
+          <select id="scenarioSelect" aria-label="Select an incident to investigate">
+            <option value="certificate_expiry">INC-2026-0719-001 · HF-PROD-02 stopped forwarding</option>
+            <option value="firewall_block">INC-2026-0718-014 · No events reaching indexer cluster</option>
+            <option value="outputs_misconfiguration">INC-2026-0716-003 · Forwarding failure after maintenance</option>
+            <option value="disk_full">INC-2026-0714-027 · Ingestion delay and growing queues</option>
+          </select>
+        </div>
+      </div>
+      <div class="incident-facts">
+        <div><span>Incident ID</span><strong id="caseId">INC-2026-0719-001</strong></div>
+        <div><span>Affected system</span><strong id="caseHost">HF-PROD-02</strong></div>
+        <div><span>Source</span><strong id="caseSource">Splunk Monitoring</strong></div>
+        <div><span>Region</span><strong id="caseRegion">East US</strong></div>
+        <div><span>Status</span><strong class="investigating-status">Open</strong></div>
+      </div>
     </section>
 
     <section class="progress-card card">
@@ -155,6 +183,24 @@
         <div><strong>4</strong><span>Stops only when evidence is sufficient</span></div>
       </div>
       <p class="judge-line">LLMs answer from what they know. OpsMind investigates what your enterprise knows.</p>
+    </div>
+  </div>
+
+
+  <div id="historyModal" class="modal history-modal" aria-hidden="true">
+    <div class="modal-card history-card">
+      <div class="section-heading">
+        <div><p class="eyebrow">OPERATIONAL MEMORY</p><h2>Investigation History</h2></div>
+        <button id="closeHistory" class="ghost">Close</button>
+      </div>
+      <div class="history-filters">
+        <input id="historySearch" type="search" placeholder="Search ID, symptom, root cause or verdict" />
+        <select id="historyStatus"><option value="">All statuses</option><option value="completed">Completed</option><option value="inconclusive">Inconclusive</option><option value="failed">Failed</option></select>
+        <select id="historyEnvironment"><option value="">All environments</option><option value="Production">Production</option><option value="Staging">Staging</option></select>
+        <select id="historyPriority"><option value="">All priorities</option><option value="High">High</option><option value="Medium">Medium</option><option value="Low">Low</option></select>
+        <button id="refreshHistory" class="secondary">Refresh</button>
+      </div>
+      <div id="historyList" class="history-list"><p class="empty">Loading stored investigations…</p></div>
     </div>
   </div>
 
