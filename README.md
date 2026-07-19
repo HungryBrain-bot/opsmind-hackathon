@@ -1,175 +1,425 @@
-# OpsMind v1.6
+# OpsMind
 
-**OpsMind is an evidence-first AI Investigation Engine for enterprise operations.**
+<p align="center">
 
-> LLMs answer from what they know. OpsMind investigates what your enterprise knows.
+# LLMs answer from what they know.
+# **OpsMind investigates what your enterprise knows.**
 
-OpsMind turns an operational incident into a structured investigation. It generates competing hypotheses, collects targeted enterprise evidence, records how confidence changes, rejects alternatives that do not fit the evidence, and stops only when the conclusion is defensible.
+AI-Powered Incident Investigation Engine
 
-## What v1.6 showcases
+![Python](https://img.shields.io/badge/Python-3.11+-3776AB?logo=python&logoColor=white)
+![FastAPI](https://img.shields.io/badge/FastAPI-Backend-009688?logo=fastapi)
+![License](https://img.shields.io/badge/License-Apache%202.0-orange)
+![Status](https://img.shields.io/badge/Status-Hackathon%20MVP-purple)
+![Tests](https://img.shields.io/badge/Tests-Passing-brightgreen)
 
-The current hackathon release focuses on realistic Splunk Heavy Forwarder incidents. An operator opens an incident knowing only the symptom; OpsMind discovers the root cause during the investigation.
+</p>
 
-Example incident patterns include:
+---
 
-- Heavy Forwarder stopped forwarding logs
-- No events reaching the indexer cluster
-- Forwarding failure after a maintenance window
-- Severe ingestion delay with growing queues
+## Overview
 
-The underlying causes remain hidden until the investigation completes. The engine can distinguish between certificate expiry, network or firewall failure, forwarding configuration issues, and local storage or queue pressure.
+OpsMind is an AI-powered Incident Investigation Engine that helps platform engineers investigate operational incidents by collecting enterprise evidence, evaluating competing hypotheses, and producing evidence-backed conclusions.
 
-## Core capabilities
+Unlike traditional AI assistants that answer immediately, OpsMind investigates your enterprise before reaching a conclusion.
 
-- Evidence-first investigation planning
-- Multiple competing hypotheses
-- Targeted tool execution through an allow-listed registry
-- MCP-ready tool boundary
-- Live Server-Sent Events investigation updates
-- Evidence ledger, notebook, and timeline
-- Hypothesis confidence evolution
-- Explicit rejection reasons and “why not” explanations
-- Evidence sufficiency checks before reaching a verdict
-- Decision trace and evidence graph
-- Markdown and JSON investigation reports
-- Persistent investigation history with reopen, search, filter, download, and delete actions
-- Deterministic offline mode and optional OpenAI-assisted planning
+---
 
-## Quick start
+# Why OpsMind?
 
-Requirements:
+During production incidents engineers often spend 30–90 minutes switching between:
 
-- Python 3.11 or newer
-- Linux, macOS, or Windows with a POSIX-compatible shell for the helper scripts
+- Splunk
+- Microsoft Sentinel
+- SSH Sessions
+- Jira
+- Runbooks
+- Internal Documentation
+- Historical Incidents
+
+The investigation—not the remediation—is usually the slowest part.
+
+OpsMind automates the investigation.
+
+---
+
+# What OpsMind Does
+
+Instead of generating an answer immediately, OpsMind:
+
+- Creates multiple competing hypotheses
+- Collects enterprise evidence
+- Eliminates incorrect hypotheses
+- Explains why hypotheses were rejected
+- Produces an evidence-backed verdict
+- Generates investigation reports
+- Stores investigation history
+
+---
+
+# Demo Scenario
+
+Example Incident
+
+```
+INC-2026-0719-001
+
+Heavy Forwarder stopped forwarding logs
+```
+
+Possible hidden root causes
+
+- Expired client certificate
+- Firewall block
+- outputs.conf misconfiguration
+- Disk full / blocked queues
+
+The user never selects the root cause.
+
+OpsMind discovers it through investigation.
+
+---
+
+# Features
+
+✅ AI Investigation Engine
+
+✅ Multiple Competing Hypotheses
+
+✅ Enterprise Evidence Collection
+
+✅ Explainable AI
+
+✅ Confidence Evolution
+
+✅ Decision Trace
+
+✅ Investigation History
+
+✅ Report Generation
+
+✅ Scenario Engine
+
+✅ Modern Incident Dashboard
+
+---
+
+# Architecture
+
+```
+                   Incident
+
+                       │
+
+                       ▼
+
+            Investigation Planner
+
+                       │
+
+       ┌───────────────┼───────────────┐
+
+       ▼               ▼               ▼
+
+ Configuration     Connectivity     Runtime
+
+       ▼               ▼               ▼
+
+             Enterprise Evidence
+
+                       │
+
+                       ▼
+
+          Hypothesis Evaluation
+
+                       │
+
+                       ▼
+
+           Confidence Evolution
+
+                       │
+
+                       ▼
+
+                Final Verdict
+
+                       │
+
+                       ▼
+
+            Investigation Report
+```
+
+---
+
+# Tech Stack
+
+## Backend
+
+- Python
+- FastAPI
+
+## Frontend
+
+- HTML
+- CSS
+- JavaScript
+
+## Testing
+
+- pytest
+
+## Code Quality
+
+- Ruff
+- Black
+
+---
+
+# Repository Structure
+
+```
+backend/
+frontend/
+docs/
+tests/
+data/
+
+README.md
+CHANGELOG.md
+LICENSE
+```
+
+---
+
+# Quick Start
+
+## Clone
+
+```bash
+git clone git@github.com:HungryBrain-bot/opsmind-hackathon.git
+cd opsmind-hackathon
+```
+
+## Create virtual environment
 
 ```bash
 python3 -m venv .venv
 source .venv/bin/activate
-python -m pip install --upgrade pip
-pip install -e ".[dev]"
+```
 
+## Upgrade pip
+
+```bash
+python -m pip install --upgrade pip
+```
+
+## Install dependencies
+
+```bash
+pip install -e ".[dev]"
+```
+
+## Make scripts executable (Linux/macOS)
+
+```bash
+chmod +x run-demo.sh
+
+find . -type f -name "*.sh" -exec chmod +x {} \;
+```
+
+## Run tests
+
+```bash
 pytest -q
+```
+
+Expected
+
+```
+23 passed
+```
+
+## Start OpsMind
+
+```bash
 ./run-demo.sh
 ```
 
-Open `http://127.0.0.1:8000`.
+Open
 
-On Windows PowerShell, activate the environment with:
-
-```powershell
-.venv\Scripts\Activate.ps1
-python -m uvicorn app.main:app --app-dir backend --reload
+```
+http://127.0.0.1:8000
 ```
 
-## Optional OpenAI planner
+---
+
+# Demo Walkthrough
+
+1. Open an incident
+2. Start Investigation
+3. Watch evidence collection
+4. Observe competing hypotheses
+5. Review rejected hypotheses
+6. Review final verdict
+7. Download report
+8. View Investigation History
+
+---
+
+# Screenshots
+
+## Dashboard
+
+![Dashboard](docs/images/dashboard.png)
+
+---
+
+## Investigation
+
+![Investigation](docs/images/investigation.png)
+
+---
+
+## Final Verdict
+
+![Verdict](docs/images/verdict.png)
+
+---
+
+## Investigation History
+
+![History](docs/images/history.png)
+
+---
+
+# Documentation
+
+| Document | Description |
+|-----------|-------------|
+| Architecture | System Design |
+| Demo Guide | Step-by-step demo |
+| API | REST API Reference |
+| CONTRIBUTING | Contribution Guide |
+| SECURITY | Security Policy |
+
+---
+
+# Troubleshooting
+
+## Permission denied when running run-demo.sh
 
 ```bash
-cp .env.example .env
-# Add OPENAI_API_KEY to .env, then:
-./run-ai.sh
+chmod +x run-demo.sh
 ```
 
-The OpenAI planner may propose investigation steps. OpsMind still controls the allowed tools, evidence normalization, hypothesis state, sufficiency rules, verdict generation, and final audit trail.
+---
 
-## Demo flow
+## pytest not found
 
-1. Open a production incident.
-2. Start the investigation.
-3. Watch OpsMind create and test competing hypotheses.
-4. Inspect evidence, confidence changes, and rejected alternatives.
-5. Review the evidence-backed verdict and recommended actions.
-6. Download the report.
-7. Reopen the completed case from Investigation History.
-8. Run a second incident to show that the same engine reaches a different conclusion from different evidence.
-
-See [docs/DEMO_GUIDE.md](docs/DEMO_GUIDE.md) for the full presentation script.
-
-## Architecture
-
-```text
-Enterprise Sources
-        │
-        ▼
-MCP / Tool Adapters
-        │
-        ▼
-Investigation Packs
-        │
-        ▼
-Planner → Evidence Collection → Evidence Ledger
-        │                         ├─ Timeline
-        │                         ├─ Notebook
-        │                         ├─ Confidence Evolution
-        │                         └─ Evidence Graph
-        ▼
-Hypothesis Evaluation → Evidence Sufficiency → Verdict
-        │
-        ▼
-Decision Trace → Reports → Investigation History
-```
-
-See [docs/ARCHITECTURE.md](docs/ARCHITECTURE.md) for design details.
-
-## API
-
-FastAPI exposes interactive documentation at:
-
-- `http://127.0.0.1:8000/docs`
-- `http://127.0.0.1:8000/redoc`
-
-The primary API prefix is `/api/v1`. See [docs/API.md](docs/API.md).
-
-## Repository layout
-
-```text
-backend/app/
-├── api/              # HTTP and SSE endpoints
-├── core/             # Settings and logging
-├── investigation/    # Planner, engine, tools, evaluation, reports
-├── schemas/          # Pydantic models
-└── storage/          # Investigation repository abstraction
-
-backend/tests/         # Automated tests
-frontend/              # Investigation workspace UI
-data/investigations/   # Runtime history; ignored except .gitkeep
-docs/                  # Architecture, API, and demo documentation
-```
-
-## Operating modes
-
-### Offline fixture mode
-
-The default hackathon mode is deterministic and works without external credentials. It is intended for repeatable demonstrations and automated tests.
-
-### OpenAI-assisted mode
-
-When configured, OpenAI can assist the planning stage. Tool access, evidence handling, sufficiency, and auditability remain enforced by OpsMind.
-
-## Known limitations
-
-This is a hackathon MVP, not a production deployment. Current limitations include:
-
-- File-based persistence rather than a production database
-- No authentication, authorization, or multitenant isolation
-- Demo-oriented enterprise evidence adapters
-- No automated remediation execution
-- No Jira, email, or ticketing write-back
-- Markdown report export only; PDF export is deferred
-- No production secrets manager or hardened deployment configuration
-
-## Development
+Activate the virtual environment
 
 ```bash
-ruff check .
-pytest -q
+source .venv/bin/activate
 ```
 
-Please read [CONTRIBUTING.md](CONTRIBUTING.md) before submitting changes.
+---
 
-## Security
+## ModuleNotFoundError
 
-Do not use this MVP to execute remediation against production systems. See [SECURITY.md](SECURITY.md) for reporting guidance and current security boundaries.
+```bash
+pip install -e ".[dev]"
+```
 
-## License
+---
 
-Licensed under the Apache License 2.0. See [LICENSE](LICENSE).
+## Port 8000 already in use
+
+```bash
+lsof -i :8000
+kill <PID>
+```
+
+---
+
+# Roadmap
+
+## Current (v1.6)
+
+- Investigation Engine
+- Scenario Engine
+- Reports
+- Investigation History
+
+## Planned
+
+- Splunk Integration
+- Microsoft Sentinel Integration
+- Jira Integration
+- MCP Support
+- Knowledge Graph
+- OpenAI Agents SDK
+- Multi-Agent Investigation
+
+---
+
+# Traditional AI vs OpsMind
+
+| Traditional AI | OpsMind |
+|----------------|----------|
+| Answers immediately | Investigates first |
+| General knowledge | Enterprise knowledge |
+| Single response | Evidence-backed reasoning |
+| No investigation | Multi-step investigation |
+| Doesn't explain rejected hypotheses | Shows rejected hypotheses |
+| Limited operational memory | Investigation History |
+
+---
+
+# Contributing
+
+Contributions are welcome.
+
+Please read **CONTRIBUTING.md**
+
+---
+
+# Security
+
+Please read **SECURITY.md**
+
+---
+
+# License
+
+Licensed under the Apache 2.0 License.
+
+---
+
+# Repository Status
+
+Version
+
+```
+v1.6.0
+```
+
+Status
+
+```
+Hackathon MVP
+```
+
+Tests
+
+```
+Passing
+```
+
+License
+
+```
+Apache 2.0
+```
