@@ -4,7 +4,8 @@ from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request
 from fastapi.responses import PlainTextResponse, StreamingResponse
 
 from app.core.settings import Settings, get_settings
-from app.investigation.engine import InvestigationEngine
+from app.investigation.demo_engine import DemoInvestigationEngine
+from app.investigation.orchestrator import InvestigationOrchestrator
 from app.investigation.explainability import DecisionTraceBuilder
 from app.investigation.reporting import InvestigationReportBuilder
 from app.investigation.store import InvestigationNotFoundError, InvestigationStore
@@ -27,8 +28,9 @@ def get_store() -> InvestigationStore:
 def get_engine(
     settings: Settings = Depends(get_settings),
     store: InvestigationStore = Depends(get_store),
-) -> InvestigationEngine:
-    return InvestigationEngine(settings, store)
+) -> InvestigationOrchestrator:
+    engine = DemoInvestigationEngine(settings, store)
+    return InvestigationOrchestrator(engine)
 
 
 
@@ -78,7 +80,7 @@ async def delete_historical_investigation(investigation_id: str) -> None:
 async def create_investigation(
     request: InvestigationRequest,
     background_tasks: BackgroundTasks,
-    engine: InvestigationEngine = Depends(get_engine),
+    engine: InvestigationOrchestrator = Depends(get_engine),
 ) -> InvestigationResult:
     result = await engine.create(request)
     background_tasks.add_task(engine.run, result.investigation_id)
