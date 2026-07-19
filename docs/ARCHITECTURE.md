@@ -64,7 +64,7 @@ The engine coordinates the investigation lifecycle:
 
 ### Investigation Packs
 
-Packs contain domain-specific knowledge while keeping the core engine reusable. The v1.6 release contains a Splunk Heavy Forwarder pack with multiple realistic incident paths.
+Packs contain domain-specific knowledge while keeping the core engine reusable. The v1.7 release contains a Splunk Heavy Forwarder pack with multiple realistic incident paths.
 
 A pack can define:
 
@@ -117,7 +117,9 @@ Uses repeatable local evidence paths for demonstrations and tests. No external A
 
 ### OpenAI-assisted planning mode
 
-OpenAI can propose a plan, but the OpsMind engine remains responsible for tool authorization, evidence normalization, confidence updates, sufficiency checks, and the audit trail.
+The engine factory selects `OpenAIInvestigationEngine`, which uses a versioned prompt builder and a dedicated Responses API adapter. Pydantic validates the structured response, then OpsMind applies semantic checks for tool authorization, ID stability, hypothesis coverage, and maximum rounds. Invalid plans are retried within a configured bound and may fall back to the deterministic fixture planner.
+
+OpenAI proposes a plan, but the OpsMind engine remains responsible for tool authorization, evidence normalization, confidence updates, sufficiency checks, verdict generation, persistence, and the audit trail.
 
 ## Safety model
 

@@ -2,11 +2,15 @@ from __future__ import annotations
 
 from abc import ABC, abstractmethod
 import logging
-
-from pydantic import ValidationError
+from typing import Callable
 
 from app.core.settings import Settings
 from app.investigation.fixtures import heavy_forwarder_hypotheses
+from app.investigation.openai_planner_client import (
+    OpenAIResponsesPlannerClient,
+    PlannerModelClient,
+)
+from app.investigation.planner_prompt import build_planner_prompt
 from app.observability.telemetry import ModelUsage, Timer
 from app.schemas.hypothesis import HypothesisStatus
 from app.schemas.investigation import InvestigationRequest
@@ -14,11 +18,7 @@ from app.schemas.plan import EvidenceRequirement, InvestigationPlan
 
 logger = logging.getLogger(__name__)
 
-SYSTEM_PROMPT = """You are the planning layer of OpsMind, an enterprise investigation engine.
-Create a bounded, evidence-first investigation plan. Do not produce a verdict. Do not recommend
-write actions. Use only the available read-only tool names. Hypotheses must be mutually useful,
-prioritized through their confidence values, and falsifiable. Every evidence requirement must say
-which hypothesis it helps test. Return only data conforming to the supplied schema."""
+PlannerClientFactory = Callable[[str], PlannerModelClient]
 
 
 class InvestigationPlanner(ABC):
@@ -59,11 +59,18 @@ class FixtureInvestigationPlanner(InvestigationPlanner):
 
 
 class OpenAIInvestigationPlanner(InvestigationPlanner):
-    """Structured-output planner with strict validation and fixture fallback."""
+    """Structured-output planner with validation, bounded retries and fixture fallback."""
 
-    def __init__(self, settings: Settings, available_tools: list[str]) -> None:
+    def __init__(
+        self,
+        settings: Settings,
+        available_tools: list[str],
+        *,
+        client_factory: PlannerClientFactory | None = None,
+    ) -> None:
         self.settings = settings
-        self.available_tools = available_tools
+        self.available_tools = sorted(set(available_tools))
+        self._client_factory = client_factory or OpenAIResponsesPlannerClient
         self.last_usage = ModelUsage(
             provider="openai",
             model=settings.openai_model,
@@ -71,71 +78,92 @@ class OpenAIInvestigationPlanner(InvestigationPlanner):
         )
 
     async def create_plan(self, request: InvestigationRequest) -> InvestigationPlan:
+        prompt = build_planner_prompt(
+            version=self.settings.planner_prompt_version,
+            request=request,
+            available_tools=self.available_tools,
+        )
         if not self.settings.openai_api_key:
             return await self._fallback(request, "OPENAI_API_KEY is not configured", 0)
 
-        from openai import AsyncOpenAI
-
-        client = AsyncOpenAI(api_key=self.settings.openai_api_key)
+        client = self._client_factory(self.settings.openai_api_key)
         timer = Timer.start()
         last_error: Exception | None = None
         attempts = max(1, self.settings.planner_max_validation_attempts)
 
         for attempt in range(1, attempts + 1):
             try:
-                response = await client.responses.parse(
+                response = await client.create_plan(
                     model=self.settings.openai_model,
-                    input=[
-                        {"role": "system", "content": SYSTEM_PROMPT},
-                        {
-                            "role": "user",
-                            "content": (
-                                f"Prompt version: {self.settings.planner_prompt_version}\n"
-                                f"Problem: {request.problem}\n"
-                                f"Environment: {request.environment}\n"
-                                f"Priority: {request.priority}\n"
-                                f"Available read-only tools: {', '.join(self.available_tools)}\n"
-                                "Use IDs H-001 onward and R-001 onward."
-                            ),
-                        },
-                    ],
-                    text_format=InvestigationPlan,
+                    system_prompt=prompt.system,
+                    user_prompt=prompt.user,
                 )
-                plan = response.output_parsed
-                if plan is None:
-                    raise ValueError("Model returned no parsed investigation plan")
-                self._validate_tools(plan)
-                usage = getattr(response, "usage", None)
-                input_tokens = int(getattr(usage, "input_tokens", 0) or 0)
-                output_tokens = int(getattr(usage, "output_tokens", 0) or 0)
+                self._validate_plan(response.plan)
                 self.last_usage = ModelUsage(
                     provider="openai",
                     model=self.settings.openai_model,
-                    prompt_version=self.settings.planner_prompt_version,
-                    request_count=1,
-                    input_tokens=input_tokens,
-                    output_tokens=output_tokens,
-                    total_tokens=input_tokens + output_tokens,
-                    estimated_cost_usd=self._estimate_cost(input_tokens, output_tokens),
+                    prompt_version=prompt.version,
+                    request_count=attempt,
+                    input_tokens=response.input_tokens,
+                    output_tokens=response.output_tokens,
+                    total_tokens=response.input_tokens + response.output_tokens,
+                    estimated_cost_usd=self._estimate_cost(
+                        response.input_tokens, response.output_tokens
+                    ),
                     latency_ms=timer.elapsed_ms(),
                     validation_attempts=attempt,
                 )
-                return plan
-            except (ValidationError, ValueError, Exception) as exc:
-                # OpenAI SDK/API exceptions are intentionally captured here so the MVP can degrade safely.
+                return response.plan
+            except Exception as exc:
+                # The adapter contains the vendor boundary. Any API, parsing or semantic
+                # validation failure is safe to retry within the configured bound.
                 last_error = exc
-                logger.warning("planner.validation_or_api_failure attempt=%s error=%s", attempt, exc)
+                logger.warning(
+                    "planner.validation_or_api_failure attempt=%s error=%s", attempt, exc
+                )
 
         return await self._fallback(request, str(last_error or "Planner failed"), attempts, timer)
 
-    def _validate_tools(self, plan: InvestigationPlan) -> None:
-        unknown = {
+    def _validate_plan(self, plan: InvestigationPlan) -> None:
+        unknown_tools = {
             item.preferred_tool
             for item in plan.evidence_requirements
             if item.preferred_tool not in self.available_tools
         }
-        if unknown:
-            raise ValueError(f"Planner selected unavailable tools: {sorted(unknown)}")
+        if unknown_tools:
+            raise ValueError(f"Planner selected unavailable tools: {sorted(unknown_tools)}")
+
+        hypothesis_ids = [item.id for item in plan.hypotheses]
+        expected_hypothesis_ids = [f"H-{index:03d}" for index in range(1, len(hypothesis_ids) + 1)]
+        if hypothesis_ids != expected_hypothesis_ids:
+            raise ValueError(
+                "Hypothesis IDs must be sequential and ordered from H-001; "
+                f"received {hypothesis_ids}"
+            )
+
+        requirement_ids = [item.id for item in plan.evidence_requirements]
+        expected_requirement_ids = [
+            f"R-{index:03d}" for index in range(1, len(requirement_ids) + 1)
+        ]
+        if requirement_ids != expected_requirement_ids:
+            raise ValueError(
+                "Evidence requirement IDs must be sequential and ordered from R-001; "
+                f"received {requirement_ids}"
+            )
+
+        untested = set(hypothesis_ids) - {
+            hypothesis_id
+            for requirement in plan.evidence_requirements
+            for hypothesis_id in requirement.hypothesis_ids
+        }
+        if untested:
+            raise ValueError(f"Every hypothesis must have planned evidence: {sorted(untested)}")
+
+        if plan.maximum_rounds > self.settings.max_investigation_rounds:
+            raise ValueError(
+                "Planner maximum_rounds exceeds the runtime safety limit: "
+                f"{plan.maximum_rounds} > {self.settings.max_investigation_rounds}"
+            )
 
     async def _fallback(
         self, request: InvestigationRequest, reason: str, attempts: int, timer: Timer | None = None
@@ -168,10 +196,15 @@ class OpenAIInvestigationPlanner(InvestigationPlanner):
 
 
 def create_planner(settings: Settings, available_tools: list[str]) -> InvestigationPlanner:
-    if settings.planner_provider.lower() == "openai":
+    provider = settings.planner_provider.strip().lower()
+    if provider == "openai":
         return OpenAIInvestigationPlanner(settings, available_tools)
-    return FixtureInvestigationPlanner()
-
+    if provider == "fixture":
+        return FixtureInvestigationPlanner()
+    raise ValueError(
+        f"Unsupported planner provider {settings.planner_provider!r}. "
+        "Expected 'fixture' or 'openai'."
+    )
 
 def _golden_path_requirements() -> list[EvidenceRequirement]:
     return [
