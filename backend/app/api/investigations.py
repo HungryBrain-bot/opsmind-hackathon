@@ -1,14 +1,16 @@
 import asyncio
 
 from fastapi import APIRouter, BackgroundTasks, Depends, HTTPException, Request
-from fastapi.responses import StreamingResponse
+from fastapi.responses import PlainTextResponse, StreamingResponse
 
 from app.core.settings import Settings, get_settings
 from app.investigation.engine import InvestigationEngine
 from app.investigation.explainability import DecisionTraceBuilder
+from app.investigation.reporting import InvestigationReportBuilder
 from app.investigation.store import InvestigationNotFoundError, InvestigationStore
 from app.schemas.explainability import InvestigationDecisionTrace
 from app.schemas.investigation import InvestigationRequest, InvestigationResult, InvestigationStatus
+from app.schemas.report import InvestigationReport
 
 router = APIRouter(prefix="/investigations", tags=["investigations"])
 _store = InvestigationStore()
@@ -173,3 +175,33 @@ async def get_decision_trace(
     except InvestigationNotFoundError as exc:
         raise HTTPException(status_code=404, detail="Investigation not found") from exc
     return DecisionTraceBuilder().build(result)
+
+
+@router.get("/{investigation_id}/report", response_model=InvestigationReport)
+async def get_investigation_report(
+    investigation_id: str,
+    store: InvestigationStore = Depends(get_store),
+) -> InvestigationReport:
+    try:
+        result = await store.get(investigation_id)
+    except InvestigationNotFoundError as exc:
+        raise HTTPException(status_code=404, detail="Investigation not found") from exc
+    return InvestigationReportBuilder().build(result)
+
+
+@router.get("/{investigation_id}/report.md")
+async def download_investigation_report(
+    investigation_id: str,
+    store: InvestigationStore = Depends(get_store),
+) -> PlainTextResponse:
+    try:
+        result = await store.get(investigation_id)
+    except InvestigationNotFoundError as exc:
+        raise HTTPException(status_code=404, detail="Investigation not found") from exc
+    content = InvestigationReportBuilder().to_markdown(result)
+    filename = f"opsmind-investigation-{investigation_id}.md"
+    return PlainTextResponse(
+        content,
+        media_type="text/markdown; charset=utf-8",
+        headers={"Content-Disposition": f'attachment; filename="{filename}"'},
+    )

@@ -1,5 +1,12 @@
 # Changelog
 
+## 1.3.0
+
+- Added structured and Markdown investigation report export
+- Added decision trace and evidence ledger to reports
+- Added Download report and Copy summary UI actions
+- Added report API tests
+
 ## 1.2.0
 
 - Added decision trace for the selected hypothesis

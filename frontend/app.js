@@ -17,11 +17,45 @@ async function loadRuntime(){
 loadRuntime();
 
 const runButton=document.getElementById('runButton');
+const downloadReportButton=document.getElementById('downloadReportButton');
+const copyReportButton=document.getElementById('copyReportButton');
 let eventSource=null;
 let lastSnapshot=null;
 
 function pct(v){return `${Math.round((v||0)*100)}%`;}
 function escapeHtml(value=''){return String(value).replace(/[&<>'"]/g,c=>({'&':'&amp;','<':'&lt;','>':'&gt;',"'":'&#39;','"':'&quot;'}[c]));}
+
+
+function enableReportActions(data){
+  const terminal=['completed','inconclusive'].includes(data.status);
+  downloadReportButton.disabled=!terminal;
+  copyReportButton.disabled=!terminal;
+}
+function buildClipboardSummary(data){
+  const leader=[...data.hypotheses].sort((a,b)=>b.confidence-a.confidence)[0];
+  return [
+    'OpsMind Investigation Summary',
+    `Investigation: ${data.investigation_id}`,
+    `Problem: ${data.problem}`,
+    `Verdict: ${data.verdict||'No verdict generated'}`,
+    `Leading confidence: ${leader?pct(leader.confidence):'N/A'}`,
+    '',
+    'Evidence:',
+    ...data.evidence.map(e=>`- ${e.id}: ${e.title} (${e.source})`),
+    '',
+    'Recommended actions:',
+    ...(data.recommended_actions||[]).map((a,i)=>`${i+1}. ${a}`)
+  ].join('\n');
+}
+downloadReportButton.addEventListener('click',()=>{
+  if(lastSnapshot)window.location.href=`/api/v1/investigations/${lastSnapshot.investigation_id}/report.md`;
+});
+copyReportButton.addEventListener('click',async()=>{
+  if(!lastSnapshot)return;
+  await navigator.clipboard.writeText(buildClipboardSummary(lastSnapshot));
+  copyReportButton.textContent='Copied';
+  setTimeout(()=>copyReportButton.textContent='Copy summary',1200);
+});
 
 function updateSteps(data){
   const phaseIndex=data.progress_percent>=100?4:data.progress_percent>=85?3:data.progress_percent>=35?2:data.progress_percent>=15?1:0;
@@ -191,6 +225,7 @@ function render(data){
   }).join(''):'<p class="empty">Investigation notes will appear here.</p>';
   document.getElementById('timeline').scrollTop=document.getElementById('timeline').scrollHeight;
 
+  enableReportActions(data);
   renderDecisionTrace(data);
   renderRules(data);
   renderPlan(data);
