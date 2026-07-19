@@ -10,7 +10,6 @@ AI-Powered Incident Investigation Engine
 ![Python](https://img.shields.io/badge/Python-3.11+-3776AB?logo=python&logoColor=white)
 ![FastAPI](https://img.shields.io/badge/FastAPI-Backend-009688?logo=fastapi)
 ![License](https://img.shields.io/badge/License-Apache%202.0-orange)
-![Status](https://img.shields.io/badge/Status-Hackathon%20MVP-purple)
 ![Tests](https://img.shields.io/badge/Tests-Passing-brightgreen)
 
 </p>
