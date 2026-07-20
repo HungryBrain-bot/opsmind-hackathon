@@ -1,4 +1,4 @@
-# OpsMind v1.6 Demo Guide
+# OpsMind v2.0 Demo Guide
 
 ## Goal
 

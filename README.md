@@ -1,5 +1,24 @@
 # OpsMind
 
+# OpsMind v2.0 — Visual AI Investigation Platform
+
+OpsMind now exposes its multi-round investigation engine through a visual enterprise workspace. Engineers can inspect an interactive evidence graph, compare competing hypotheses, see confidence evolve across rounds, replay the reasoning timeline, and follow an evidence-backed resolution and verification lifecycle.
+
+## Visual workspace capabilities
+
+- Interactive evidence graph with support, contradiction and enterprise-entity relationships
+- Presentation-ready workspace API: `GET /api/v1/investigations/{id}/workspace`
+- Confidence evolution by investigation round
+- Hypothesis whiteboard with supporting and contradicting evidence
+- Replayable investigation timeline
+- Containment, recovery, verification, rollback and prevention flow
+- Verification checklist and reusable operational memory
+- Engineer and executive views
+- Deterministic local judge scenario with no external API key required
+
+See [`docs/VISUAL_INVESTIGATION_WORKSPACE.md`](docs/VISUAL_INVESTIGATION_WORKSPACE.md) and [`docs/JUDGE_GUIDE.md`](docs/JUDGE_GUIDE.md).
+
+
 <p align="center">
 
 # LLMs answer from what they know.
@@ -467,7 +486,7 @@ kill <PID>
 
 # Roadmap
 
-## Current (v1.7)
+## Previous engine milestone (v1.7)
 
 - Investigation Engine
 - Investigation Planner
@@ -515,7 +534,7 @@ Licensed under the Apache License 2.0.
 
 | Item | Status |
 |------|--------|
-| Version | v1.7.0 |
+| Version | v2.0.0 |
 | Status | Hackathon MVP |
 | Tests | Passing |
 | License | Apache 2.0 |

@@ -8,12 +8,14 @@ from app.investigation.engine_factory import InvestigationEngineFactory
 from app.investigation.orchestrator import InvestigationOrchestrator
 from app.investigation.explainability import DecisionTraceBuilder
 from app.investigation.reporting import InvestigationReportBuilder
+from app.investigation.workspace import InvestigationWorkspaceBuilder
 from app.investigation.store import InvestigationNotFoundError, InvestigationStore
 from app.storage.file_repository import FileInvestigationRepository
 from app.storage.models import InvestigationHistoryItem
 from app.schemas.explainability import InvestigationDecisionTrace
 from app.schemas.investigation import InvestigationRequest, InvestigationResult, InvestigationStatus
 from app.schemas.report import InvestigationReport
+from app.schemas.workspace import InvestigationWorkspace
 
 router = APIRouter(prefix="/investigations", tags=["investigations"])
 _settings = get_settings()
@@ -135,6 +137,18 @@ async def stream_events(
         media_type="text/event-stream",
         headers={"Cache-Control": "no-cache", "X-Accel-Buffering": "no"},
     )
+
+
+@router.get("/{investigation_id}/workspace", response_model=InvestigationWorkspace)
+async def get_investigation_workspace(
+    investigation_id: str,
+    store: InvestigationStore = Depends(get_store),
+) -> InvestigationWorkspace:
+    try:
+        result = await store.get(investigation_id)
+    except InvestigationNotFoundError as exc:
+        raise HTTPException(status_code=404, detail="Investigation not found") from exc
+    return InvestigationWorkspaceBuilder().build(result)
 
 
 @router.get("/{investigation_id}/timeline")

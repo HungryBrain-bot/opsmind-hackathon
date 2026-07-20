@@ -181,3 +181,23 @@ The following decisions remain in code rather than unconstrained model output:
 ### Operational memory
 
 `KnowledgeCaptureService` creates a reusable knowledge pattern from a completed investigation. It stores symptoms, root cause, resolution summary, verification targets, entities, evidence categories, tags, and confidence. The MVP stores the object in the investigation result; a future retrieval layer can index these patterns for case-based planning.
+
+
+## v2.0 Presentation Layer
+
+The investigation engine remains the source of truth. `InvestigationWorkspaceBuilder` transforms the canonical investigation result into graph, timeline, confidence, hypothesis, resolution, verification and playback models. The browser renders these models without reproducing investigation logic.
+
+```text
+Enterprise Sources → Investigation Engine → InvestigationResult
+                                              │
+                                              ▼
+                              InvestigationWorkspaceBuilder
+                                              │
+                    ┌─────────────┬────────────┼─────────────┐
+                    ▼             ▼            ▼             ▼
+              Evidence Graph  Confidence   Resolution    Playback
+                    └─────────────┴────────────┴─────────────┘
+                                              │
+                                              ▼
+                              Visual Investigation Workspace
+```

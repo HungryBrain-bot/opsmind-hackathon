@@ -3,207 +3,144 @@
 <head>
   <meta charset="utf-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1" />
-  <title>OpsMind — Investigation Workspace</title>
+  <meta name="theme-color" content="#08111f" />
+  <title>OpsMind — Visual Investigation Workspace</title>
   <link rel="stylesheet" href="/assets/styles.css" />
 </head>
 <body>
   <aside class="sidebar">
-    <div class="brand"><span class="brand-mark">O</span><span>OpsMind</span></div>
-    <nav>
-      <button class="nav-item active" data-section="overview">⌂ <span>Overview</span></button>
-      <button class="nav-item" data-section="investigations">⌕ <span>Investigations</span></button>
-      <button class="nav-item" data-section="history">◷ <span>Investigation History</span></button>
-      <button class="nav-item" data-section="graph">◇ <span>Evidence Graph</span></button>
-      <button class="nav-item" data-section="integrations">⌁ <span>Integrations</span></button>
-      <button class="nav-item" data-section="settings">⚙ <span>Settings</span></button>
+    <a class="brand" href="#top" aria-label="OpsMind home"><span class="brand-mark">O</span><span><strong>OpsMind</strong><small>Investigation OS</small></span></a>
+    <nav aria-label="Workspace navigation">
+      <button class="nav-item active" data-scroll="top"><span>⌂</span> Command center</button>
+      <button class="nav-item" data-scroll="graphSection"><span>◇</span> Evidence graph</button>
+      <button class="nav-item" data-scroll="hypothesisSection"><span>◈</span> Hypotheses</button>
+      <button class="nav-item" data-scroll="timelineSection"><span>◷</span> Timeline</button>
+      <button class="nav-item" data-scroll="resolutionSection"><span>✓</span> Resolution</button>
     </nav>
-    <div class="sidebar-footer">Judge-ready dual mode<br><strong>OpsMind v1.6</strong></div>
+    <div class="sidebar-foot">
+      <span class="live-dot"></span> Local demo ready
+      <strong>OpsMind v2.0</strong>
+    </div>
   </aside>
 
-  <main>
+  <main id="top">
     <header class="topbar">
       <div>
-        <p class="eyebrow">INVESTIGATION WORKSPACE</p>
-        <h1 id="title">Heavy Forwarder not ingesting logs</h1>
+        <p class="eyebrow">VISUAL AI INVESTIGATION PLATFORM</p>
+        <h1>Enterprise investigation workspace</h1>
       </div>
-      <div class="top-actions">
-        <button id="judgeMode" class="judge-button">Judge mode</button>
-        <span id="modeBadge" class="mode-badge loading">Detecting mode…</span>
-        <span class="status-dot"></span><span>Systems healthy</span>
-        <button id="runButton">Start investigation</button>
-      <button id="downloadReportButton" class="secondary report-button" type="button" disabled>Download report</button>
-      <button id="copyReportButton" class="secondary report-button" type="button" disabled>Copy summary</button>
+      <div class="toolbar">
+        <button id="viewModeButton" class="button secondary">Engineer view</button>
+        <button id="playbackButton" class="button secondary" disabled>▶ Replay</button>
+        <button id="runButton" class="button primary">Start golden investigation</button>
       </div>
     </header>
 
-    <section class="meta-strip">
-      <div><span>ID</span><strong id="investigationId">Not started</strong></div>
-      <div><span>Environment</span><strong>Production</strong></div>
-      <div><span>Priority</span><strong class="priority">High</strong></div>
-      <div><span>Current phase</span><strong id="currentPhase">Ready</strong></div>
-    </section>
-
-
-    <section class="incident-card card">
-      <div class="incident-card-heading">
-        <div>
-          <p class="eyebrow">OPEN INVESTIGATION</p>
-          <h2 id="incidentTitle">Heavy Forwarder stopped forwarding logs</h2>
-          <p id="incidentSummary" class="incident-summary">Production monitoring detected a sustained ingestion outage from a critical Heavy Forwarder.</p>
-        </div>
-        <div class="incident-picker">
-          <label for="scenarioSelect">Active incident</label>
-          <select id="scenarioSelect" aria-label="Select an incident to investigate">
-            <option value="certificate_expiry">INC-2026-0719-001 · HF-PROD-02 stopped forwarding</option>
-            <option value="firewall_block">INC-2026-0718-014 · No events reaching indexer cluster</option>
-            <option value="outputs_misconfiguration">INC-2026-0716-003 · Forwarding failure after maintenance</option>
-            <option value="disk_full">INC-2026-0714-027 · Ingestion delay and growing queues</option>
-          </select>
-        </div>
+    <section class="incident-hero card">
+      <div class="incident-copy">
+        <div class="hero-kicker"><span id="statusPill" class="pill ready">Ready</span><span id="caseId">INC-2026-0719-001</span></div>
+        <h2 id="incidentTitle">Heavy Forwarder stopped forwarding production logs</h2>
+        <p id="incidentSummary">OpsMind will investigate the incident across operational, configuration, historical and relationship evidence.</p>
       </div>
-      <div class="incident-facts">
-        <div><span>Incident ID</span><strong id="caseId">INC-2026-0719-001</strong></div>
-        <div><span>Affected system</span><strong id="caseHost">HF-PROD-02</strong></div>
-        <div><span>Source</span><strong id="caseSource">Splunk Monitoring</strong></div>
-        <div><span>Region</span><strong id="caseRegion">East US</strong></div>
-        <div><span>Status</span><strong class="investigating-status">Open</strong></div>
+      <div class="incident-select-wrap">
+        <label for="scenarioSelect">Golden scenario</label>
+        <select id="scenarioSelect">
+          <option value="certificate_expiry">Certificate expiry · HF-PROD-02</option>
+          <option value="firewall_block">Firewall block · indexer path</option>
+          <option value="outputs_misconfiguration">outputs.conf drift · maintenance</option>
+          <option value="disk_full">Disk saturation · blocked queues</option>
+        </select>
+      </div>
+      <div class="hero-metrics">
+        <div><span>Phase</span><strong id="phaseValue">Intake</strong></div>
+        <div><span>Round</span><strong id="roundValue">0</strong></div>
+        <div><span>Confidence</span><strong id="confidenceValue">0%</strong></div>
+        <div><span>Evidence</span><strong id="evidenceValue">0</strong></div>
+        <div><span>Completeness</span><strong id="completenessValue">0%</strong></div>
       </div>
     </section>
 
-    <section class="progress-card card">
-      <div class="section-heading">
-        <div><p class="eyebrow">LIVE INVESTIGATION</p><h2>Investigation progress</h2></div>
-        <strong id="progressText">0%</strong>
-      </div>
-      <div class="progress-bar"><div id="progressBar"></div></div>
-      <div class="steps">
-        <div class="step active">1<span>Understand</span></div><div class="line"></div>
-        <div class="step">2<span>Hypotheses</span></div><div class="line"></div>
-        <div class="step">3<span>Evidence</span></div><div class="line"></div>
-        <div class="step">4<span>Evaluate</span></div><div class="line"></div>
-        <div class="step">5<span>Verdict</span></div>
-      </div>
+    <section class="phase-rail card" aria-label="Investigation lifecycle">
+      <div class="phase active" data-phase="intake"><span>1</span><strong>Intake</strong></div>
+      <i></i><div class="phase" data-phase="planning"><span>2</span><strong>Plan</strong></div>
+      <i></i><div class="phase" data-phase="evidence_collection"><span>3</span><strong>Collect</strong></div>
+      <i></i><div class="phase" data-phase="reasoning"><span>4</span><strong>Reason</strong></div>
+      <i></i><div class="phase" data-phase="resolution"><span>5</span><strong>Resolve</strong></div>
+      <i></i><div class="phase" data-phase="verification"><span>6</span><strong>Verify</strong></div>
+      <i></i><div class="phase" data-phase="knowledge_capture"><span>7</span><strong>Remember</strong></div>
     </section>
 
-    <section class="status-grid">
-      <article class="card compact"><span>Rounds completed</span><strong id="roundCount">0</strong></article>
-      <article class="card compact"><span>Hypotheses remaining</span><strong id="remainingCount">0</strong></article>
-      <article class="card compact"><span>Evidence collected</span><strong id="evidenceCount">0</strong></article>
-      <article class="card compact wide"><span>Next action</span><strong id="nextAction">Start an investigation</strong></article>
-    </section>
-
-    <section class="grid-main">
-      <article class="card verdict-card">
-        <div class="section-heading">
-          <div><p class="eyebrow">CURRENT VERDICT</p><h2>Evidence-backed conclusion</h2></div>
-          <span id="reviewBadge" class="badge neutral">Pending</span>
+    <section class="command-grid">
+      <article class="card verdict-panel">
+        <div class="section-head"><div><p class="eyebrow">CURRENT BELIEF</p><h3>Root-cause verdict</h3></div><span id="verdictBadge" class="pill neutral">Pending</span></div>
+        <h2 id="leadingHypothesis">No leading hypothesis yet</h2>
+        <p id="verdictText">Start the investigation to gather corroborated evidence and build a defensible conclusion.</p>
+        <div class="confidence-hero">
+          <div class="score-ring" id="scoreRing"><strong id="scoreRingValue">0%</strong><span>confidence</span></div>
+          <div class="confidence-explain"><span>Why OpsMind believes this</span><p id="confidenceReason">Confidence is earned across investigation rounds, not generated from a single answer.</p></div>
         </div>
-        <p id="verdict" class="verdict-text">Start the investigation to generate competing hypotheses, collect evidence, and determine whether a defensible verdict can be reached.</p>
-        <div class="trust-row">
-          <div class="ring" id="strengthRing"><span id="strengthValue">0%</span></div>
-          <div><small>Evidence strength</small><strong id="strengthLabel">Not evaluated</strong></div>
-          <div class="ring secondary" id="completeRing"><span id="completeValue">0%</span></div>
-          <div><small>Completeness</small><strong id="completeLabel">Not evaluated</strong></div>
-        </div>
-        <div id="actions" class="recommendations"></div>
+        <div class="next-action"><span>Next best action</span><strong id="nextAction">Start a deterministic investigation</strong></div>
       </article>
 
-      <article class="card notebook-card">
-        <div class="section-heading">
-          <div><p class="eyebrow">INVESTIGATION NOTEBOOK</p><h2>Live findings</h2></div>
-          <span class="pulse">● Recording</span>
+      <article class="card confidence-panel">
+        <div class="section-head"><div><p class="eyebrow">CONFIDENCE EVOLUTION</p><h3>Confidence must be earned</h3></div><span id="roundBadge" class="micro">0 rounds</span></div>
+        <svg id="confidenceChart" viewBox="0 0 640 240" role="img" aria-label="Confidence evolution chart"></svg>
+        <div id="confidenceLegend" class="chart-legend"><span>No evidence rounds completed.</span></div>
+      </article>
+    </section>
+
+    <section id="graphSection" class="workspace-grid">
+      <article class="card graph-panel">
+        <div class="section-head">
+          <div><p class="eyebrow">ENTERPRISE KNOWLEDGE MAP</p><h3>Interactive evidence graph</h3></div>
+          <div class="graph-legend"><span class="support">Supports</span><span class="contradict">Contradicts</span><span class="relation">Relationship</span></div>
         </div>
-        <div id="timeline" class="notebook"><p class="empty">Investigation notes will appear here.</p></div>
+        <svg id="evidenceGraph" viewBox="0 0 1000 620" role="img" aria-label="Evidence graph"></svg>
+        <p class="graph-help">Select any node to inspect its source, rationale, confidence impact and enterprise relationships.</p>
       </article>
 
+      <aside class="card inspector-panel">
+        <p class="eyebrow">NODE INSPECTOR</p>
+        <div id="nodeInspector" class="inspector-empty">
+          <div class="inspector-icon">◇</div>
+          <h3>Select a node</h3>
+          <p>Evidence and reasoning details will appear here.</p>
+        </div>
+      </aside>
+    </section>
+
+    <section id="hypothesisSection" class="two-column">
       <article class="card">
-        <div class="section-heading">
-          <div><p class="eyebrow">COMPETING EXPLANATIONS</p><h2>Hypotheses</h2></div>
-          <span id="leadingHypothesis" class="micro-label">No leader</span>
-        </div>
-        <div id="hypotheses" class="stack"><p class="empty">No hypotheses generated.</p></div>
+        <div class="section-head"><div><p class="eyebrow">INVESTIGATOR WHITEBOARD</p><h3>Hypothesis board</h3></div><span id="hypothesisCount" class="micro">0 hypotheses</span></div>
+        <div id="hypothesisBoard" class="hypothesis-board"><p class="empty">Competing explanations will appear here.</p></div>
       </article>
-
-      <article class="card">
-        <div class="section-heading">
-          <div><p class="eyebrow">ENTERPRISE FACTS</p><h2>Evidence</h2></div>
-          <button id="graphButton" class="ghost">Graph mode</button>
-        </div>
-        <div id="evidence" class="stack"><p class="empty">No evidence collected.</p></div>
+      <article class="card contradiction-card">
+        <div class="section-head"><div><p class="eyebrow">TRUST LAYER</p><h3>Contradictions & evidence gaps</h3></div><span class="pill warning">Evidence first</span></div>
+        <div class="split-list"><div><h4>Contradictions</h4><div id="contradictions"><p class="empty">No contradictions evaluated.</p></div></div><div><h4>Missing evidence</h4><div id="missingEvidence"><p class="empty">Investigation has not started.</p></div></div></div>
       </article>
     </section>
 
-    <section class="decision-trace card">
-      <div class="section-heading">
-        <div><p class="eyebrow">DECISION TRACE</p><h2>Why this verdict — and why not the alternatives</h2></div>
-        <span id="decisionTraceBadge" class="badge neutral">Waiting</span>
-      </div>
-      <div id="decisionTrace" class="decision-trace-list">
-        <p class="empty">Decision explanations will appear as evidence is evaluated.</p>
+    <section id="timelineSection" class="card timeline-panel">
+      <div class="section-head"><div><p class="eyebrow">INVESTIGATION PLAYBACK</p><h3>How the conclusion was reached</h3></div><div class="playback-status"><span id="playbackStatus">Waiting</span><div class="playback-progress"><i id="playbackProgress"></i></div></div></div>
+      <div id="timeline" class="timeline"><p class="empty">The investigation's reasoning trail will appear here.</p></div>
+    </section>
+
+    <section id="resolutionSection" class="card resolution-panel">
+      <div class="section-head"><div><p class="eyebrow">RESOLUTION INTELLIGENCE</p><h3>Evidence-backed recovery lifecycle</h3></div><span id="approvalBadge" class="pill neutral">Awaiting verdict</span></div>
+      <div id="resolutionFlow" class="resolution-flow"><p class="empty">Containment, recovery, verification, rollback and prevention steps will appear after root cause is established.</p></div>
+      <div class="resolution-bottom">
+        <div><h4>Verification checklist</h4><div id="verificationList" class="verification-list"><p class="empty">No verification plan yet.</p></div></div>
+        <div><h4>Reusable operational memory</h4><div id="knowledgeCard" class="knowledge-card"><p class="empty">A reusable incident pattern will be captured after resolution.</p></div></div>
       </div>
     </section>
 
-    <section class="explainability-grid">
-      <article class="card explain-card">
-        <div class="section-heading">
-          <div><p class="eyebrow">WHY OPSMIND STOPPED</p><h2>Evidence sufficiency</h2></div>
-          <span id="sufficiencyBadge" class="badge neutral">Not evaluated</span>
-        </div>
-        <div id="rules" class="rules-list"><p class="empty">Sufficiency rules will appear after evaluation.</p></div>
-      </article>
-      <article class="card explain-card">
-        <div class="section-heading">
-          <div><p class="eyebrow">CONTROL PLANE</p><h2>Tools and investigation plan</h2></div>
-          <span id="toolCount" class="micro-label">0 tools</span>
-        </div>
-        <div id="plan" class="plan-list"><p class="empty">The approved read-only plan will appear here.</p></div>
-      </article>
+    <section class="judge-strip card">
+      <div><p class="eyebrow">JUDGE MODE</p><h3>One visual story, three levels of detail</h3><p>Switch between engineer and executive views while preserving the same evidence-backed investigation.</p></div>
+      <div class="judge-points"><span>✓ Deterministic demo</span><span>✓ No API key required</span><span>✓ Real backend state</span><span>✓ Replayable reasoning</span></div>
     </section>
   </main>
 
-  <div id="graphModal" class="modal" aria-hidden="true">
-    <div class="modal-card">
-      <div class="section-heading">
-        <div><p class="eyebrow">EVIDENCE GRAPH</p><h2>How the conclusion is connected</h2></div>
-        <button id="closeGraph" class="ghost">Close</button>
-      </div>
-      <div id="graphCanvas" class="graph-canvas"><p class="empty">Run an investigation to build the evidence graph.</p></div>
-    </div>
-  </div>
-
-  <div id="judgeOverlay" class="judge-overlay" aria-hidden="true">
-    <div class="judge-panel">
-      <button id="closeJudge" class="ghost judge-close">Close</button>
-      <p class="eyebrow">JUDGE MODE</p>
-      <h2>Why OpsMind is different</h2>
-      <div class="judge-grid">
-        <div><strong>1</strong><span>Creates competing hypotheses</span></div>
-        <div><strong>2</strong><span>Collects targeted enterprise evidence</span></div>
-        <div><strong>3</strong><span>Handles contradictions</span></div>
-        <div><strong>4</strong><span>Stops only when evidence is sufficient</span></div>
-      </div>
-      <p class="judge-line">LLMs answer from what they know. OpsMind investigates what your enterprise knows.</p>
-    </div>
-  </div>
-
-
-  <div id="historyModal" class="modal history-modal" aria-hidden="true">
-    <div class="modal-card history-card">
-      <div class="section-heading">
-        <div><p class="eyebrow">OPERATIONAL MEMORY</p><h2>Investigation History</h2></div>
-        <button id="closeHistory" class="ghost">Close</button>
-      </div>
-      <div class="history-filters">
-        <input id="historySearch" type="search" placeholder="Search ID, symptom, root cause or verdict" />
-        <select id="historyStatus"><option value="">All statuses</option><option value="completed">Completed</option><option value="inconclusive">Inconclusive</option><option value="failed">Failed</option></select>
-        <select id="historyEnvironment"><option value="">All environments</option><option value="Production">Production</option><option value="Staging">Staging</option></select>
-        <select id="historyPriority"><option value="">All priorities</option><option value="High">High</option><option value="Medium">Medium</option><option value="Low">Low</option></select>
-        <button id="refreshHistory" class="secondary">Refresh</button>
-      </div>
-      <div id="historyList" class="history-list"><p class="empty">Loading stored investigations…</p></div>
-    </div>
-  </div>
-
+  <div id="toast" class="toast" role="status"></div>
   <script src="/assets/app.js"></script>
 </body>
 </html>
