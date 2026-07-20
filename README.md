@@ -454,3 +454,263 @@ Traditional chatbots generate answers.
 
 Engineers can inspect every hypothesis, every piece of evidence, every confidence update, and every reasoning step before accepting the final verdict.
 
+## 🚀 Quick Start
+
+### Clone the Repository
+
+```bash
+git clone git@github.com:HungryBrain-bot/opsmind-hackathon.git
+cd opsmind-hackathon
+```
+
+### Create a Virtual Environment
+
+```bash
+python3 -m venv .venv
+source .venv/bin/activate
+```
+
+### Install Dependencies
+
+```bash
+python -m pip install --upgrade pip
+pip install -e ".[dev]"
+```
+
+### Run the Test Suite
+
+```bash
+pytest -q
+```
+
+Expected output:
+
+```text
+42 passed
+```
+
+### Start OpsMind
+
+```bash
+./run-demo.sh
+```
+
+Open:
+
+```text
+http://127.0.0.1:8000
+```
+
+---
+
+## ⚙️ Configuration
+
+Create a `.env` file:
+
+```env
+OPENAI_API_KEY=your_api_key
+OPENAI_MODEL=gpt-5.6
+
+HOST=0.0.0.0
+PORT=8000
+
+LOG_LEVEL=INFO
+
+DEMO_MODE=true
+```
+
+---
+
+## 📂 Repository Structure
+
+```text
+backend/
+├── api/
+├── core/
+├── investigation/
+├── knowledge/
+├── schemas/
+
+frontend/
+docs/
+tests/
+data/
+
+README.md
+LICENSE
+CHANGELOG.md
+```
+
+---
+
+## 🧪 Features
+
+### Investigation
+
+- Multi-round reasoning
+- Competing hypotheses
+- Confidence evolution
+- Evidence-backed verdicts
+- Replayable investigations
+
+### Workspace
+
+- Dashboard
+- Timeline
+- Evidence Graph
+- Hypothesis Board
+- Resolution Intelligence
+- Verification Dashboard
+
+### AI
+
+- GPT-5.6 reasoning
+- Structured investigation planning
+- Executive summaries
+- Explainable AI
+
+### Knowledge
+
+- Investigation history
+- Knowledge capture
+- Lessons learned
+- Reusable operational memory
+
+---
+
+## 🌐 REST API
+
+| Endpoint | Description |
+|----------|-------------|
+| `/health` | Health check |
+| `/investigations` | Create investigation |
+| `/investigations/{id}` | Investigation details |
+| `/workspace/{id}` | Workspace data |
+| `/knowledge` | Investigation knowledge |
+| `/docs` | Interactive API documentation |
+
+---
+
+## 🎯 Golden Demo Walkthrough
+
+1. Select the bundled incident.
+2. Start the investigation.
+3. Observe hypotheses being generated.
+4. Watch evidence collection.
+5. Review confidence evolution.
+6. Open the Evidence Graph.
+7. Inspect Resolution Intelligence.
+8. Verify recovery.
+9. Replay the investigation.
+10. Review captured knowledge.
+
+---
+
+## 🏆 Judge Guide (5 Minutes)
+
+| Time | Demonstration |
+|------|---------------|
+| 0:00–0:45 | Problem statement |
+| 0:45–1:30 | Start investigation |
+| 1:30–2:30 | Workspace & reasoning |
+| 2:30–3:30 | Evidence graph & confidence |
+| 3:30–4:30 | Resolution & verification |
+| 4:30–5:00 | Knowledge capture & vision |
+
+---
+
+## 📖 Documentation
+
+| Document | Purpose |
+|----------|---------|
+| `README.md` | Project overview |
+| `ARCHITECTURE.md` | Technical architecture |
+| `API.md` | REST API reference |
+| `DEMO_GUIDE.md` | Demo walkthrough |
+| `CONTRIBUTING.md` | Contribution guide |
+| `SECURITY.md` | Security policy |
+
+---
+
+## 🛣️ Roadmap
+
+### v2.0.0 (Current)
+
+- ✅ AI Investigation Engine
+- ✅ Visual Investigation Workspace
+- ✅ Multi-round reasoning
+- ✅ Resolution Intelligence
+- ✅ Knowledge Capture
+- ✅ Investigation Playback
+- ✅ Golden Demo
+
+### Next
+
+- Splunk Connector
+- Microsoft Sentinel Connector
+- Jira Connector
+- Confluence Connector
+- Kubernetes Connector
+
+### Future Vision
+
+- MCP integration
+- Knowledge Graph
+- Multi-agent investigations
+- Autonomous remediation
+- Continuous operational learning
+
+---
+
+## 🤝 Contributing
+
+Contributions are welcome.
+
+Please read **CONTRIBUTING.md** before submitting issues or pull requests.
+
+---
+
+## 🔒 Security
+
+Please refer to **SECURITY.md** for responsible disclosure guidelines.
+
+---
+
+## 📄 License
+
+Licensed under the **Apache License 2.0**.
+
+---
+
+## ❤️ Why We Built OpsMind
+
+Modern AI is excellent at answering questions.
+
+We believe the next generation of AI should investigate before it answers.
+
+OpsMind is our vision for an AI partner that helps engineers understand complex systems, reason over evidence, explain every decision, and continuously learn from every incident.
+
+---
+
+## 📊 Repository Status
+
+| Item | Status |
+|------|--------|
+| Version | **v2.0.0** |
+| Status | **OpenAI Hackathon MVP** |
+| Tests | **42 Passing** |
+| Python | **3.11+** |
+| License | **Apache 2.0** |
+
+---
+
+<p align="center">
+
+**LLMs answer from what they know.**
+
+**OpsMind investigates what your enterprise knows.**
+
+Made with ❤️ using Python, FastAPI and OpenAI.
+
+</p>
+
