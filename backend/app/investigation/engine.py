@@ -7,6 +7,7 @@ from app.core.settings import Settings
 from app.investigation.confidence import ConfidenceEvolutionService
 from app.investigation.evaluator import HypothesisEvaluator
 from app.investigation.planner import InvestigationPlanner, create_planner
+from app.investigation.reasoning import EvidenceReasoner
 from app.investigation.store import InvestigationStore
 from app.investigation.sufficiency import EvidenceSufficiencyEngine
 from app.investigation.tools import ToolRegistry
@@ -41,6 +42,7 @@ class InvestigationEngine:
         self.evaluator = HypothesisEvaluator()
         self.confidence_evolution = ConfidenceEvolutionService()
         self.sufficiency = EvidenceSufficiencyEngine(settings.sufficiency_threshold)
+        self.reasoner = EvidenceReasoner(settings, self.tools.names())
 
     async def create(self, request: InvestigationRequest) -> InvestigationResult:
         investigation_id = f"INV-{uuid4().hex[:8].upper()}"
@@ -199,6 +201,35 @@ class InvestigationEngine:
                         "summary": stop_reason.summary,
                         "rules_passed": stop_reason.rules_passed,
                         "rules_failed": stop_reason.rules_failed,
+                    },
+                )
+
+                reasoning = await self.reasoner.evaluate(
+                    round_number=round_number,
+                    hypotheses=result.hypotheses,
+                    evidence=result.evidence,
+                    deterministic_sufficient=stop_reason.sufficient,
+                )
+                result.reasoning_usage = self.reasoner.last_usage.model_copy(deep=True)
+                result.evidence_assessments = reasoning.assessments
+                result.findings = reasoning.findings
+                result.contradictions = reasoning.contradictions
+                result.evidence_gaps = reasoning.gaps
+                result.decision_history.append(reasoning.decision)
+                if reasoning.decision.next_actions:
+                    result.next_action = reasoning.decision.next_actions[0]
+                await self.store.update(result)
+                await self._emit(
+                    result,
+                    InvestigationEventType.REASONING_COMPLETED,
+                    "Evidence reasoning completed",
+                    {
+                        "round": round_number,
+                        "finding_count": len(reasoning.findings),
+                        "contradiction_count": len(reasoning.contradictions),
+                        "gap_count": len(reasoning.gaps),
+                        "decision": reasoning.decision.model_dump(mode="json"),
+                        "usage": result.reasoning_usage.model_dump(mode="json"),
                     },
                 )
                 if stop_reason.sufficient:

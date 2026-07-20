@@ -19,6 +19,10 @@ class Settings(BaseSettings):
     planner_fallback_to_fixture: bool = True
     planner_max_validation_attempts: int = 2
 
+    reasoning_provider: str = "fixture"  # fixture | openai
+    reasoning_prompt_version: str = "reasoning-v1"
+    reasoning_fallback_to_fixture: bool = True
+
     tool_transport: str = "local"  # local | mcp_stdio
     mcp_server_command: str = "python"
     mcp_server_module: str = "app.mcp.server"

@@ -141,3 +141,31 @@ The MVP is read-only by design. Future remediation should require:
 - Secrets manager
 - RBAC and approval workflows
 - Observability and analytics
+
+## Evidence reasoning boundary (v1.8)
+
+The evidence reasoning layer executes after deterministic hypothesis evaluation and before the investigation decides whether to continue. It is intentionally split into policy and judgment:
+
+- `reasoning_prompt.py` defines the versioned Investigation SOP.
+- `openai_reasoning_client.py` is the only vendor-specific model boundary.
+- `reasoning.py` coordinates fixture/OpenAI reasoning and validates references.
+- `contradictions.py` deterministically records hypothesis-level conflicts.
+- `evidence_summary.py` builds evidence-cited findings for offline mode.
+- `sufficiency.py` remains the authoritative stopping policy.
+
+```text
+Planner → Tools → Evidence normalization
+                    │
+                    ▼
+          HypothesisEvaluator
+                    │
+          ┌─────────┴─────────┐
+          ▼                   ▼
+ Structured Reasoner   Sufficiency Policy
+          │                   │
+          └─────────┬─────────┘
+                    ▼
+          Audited decision history
+```
+
+The model cannot directly assign numerical confidence, invoke arbitrary tools, or override the stopping policy. This hybrid design keeps model judgment useful while preserving repeatability, safety, and auditability.

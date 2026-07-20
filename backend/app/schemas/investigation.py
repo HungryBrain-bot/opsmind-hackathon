@@ -6,6 +6,13 @@ from pydantic import BaseModel, Field
 
 from app.schemas.evidence import Evidence
 from app.schemas.hypothesis import Hypothesis
+from app.schemas.reasoning import (
+    EvidenceAssessment,
+    EvidenceContradiction,
+    EvidenceGap,
+    InvestigationFinding,
+    ReasoningDecision,
+)
 from app.observability.telemetry import ModelUsage
 
 
@@ -35,6 +42,7 @@ class InvestigationEventType(StrEnum):
     INVESTIGATION_COMPLETED = "investigation_completed"
     INVESTIGATION_FAILED = "investigation_failed"
     PLANNER_COMPLETED = "planner_completed"
+    REASONING_COMPLETED = "reasoning_completed"
 
 
 class InvestigationRequest(BaseModel):
@@ -88,6 +96,12 @@ class InvestigationResult(BaseModel):
     planned_evidence: list[dict[str, Any]] = Field(default_factory=list)
     tools_used: list[str] = Field(default_factory=list)
     planner_usage: ModelUsage = Field(default_factory=ModelUsage)
+    reasoning_usage: ModelUsage = Field(default_factory=ModelUsage)
+    evidence_assessments: list[EvidenceAssessment] = Field(default_factory=list)
+    findings: list[InvestigationFinding] = Field(default_factory=list)
+    contradictions: list[EvidenceContradiction] = Field(default_factory=list)
+    evidence_gaps: list[EvidenceGap] = Field(default_factory=list)
+    decision_history: list[ReasoningDecision] = Field(default_factory=list)
     verdict_evidence_ids: list[str] = Field(default_factory=list)
 
 

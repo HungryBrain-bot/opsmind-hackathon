@@ -1,4 +1,4 @@
-# OpsMind v1.7
+# OpsMind v1.8
 
 **OpsMind is an evidence-first AI Investigation Engine for enterprise operations.**
 
@@ -6,7 +6,7 @@
 
 OpsMind turns an operational incident into a structured investigation. It generates competing hypotheses, collects targeted enterprise evidence, records how confidence changes, rejects alternatives that do not fit the evidence, and stops only when the conclusion is defensible.
 
-## What v1.7 showcases
+## What v1.8 showcases
 
 The current hackathon release adds a production-shaped, structured OpenAI planning boundary while preserving deterministic judge mode. It focuses on realistic Splunk Heavy Forwarder incidents. An operator opens an incident knowing only the symptom; OpsMind discovers the root cause during the investigation.
 
@@ -270,3 +270,38 @@ Do not use this MVP to execute remediation against production systems. See [SECU
 ## License
 
 Licensed under the Apache License 2.0. See [LICENSE](LICENSE).
+
+## Investigation methodology (v1.8)
+
+OpsMind now applies a versioned Investigation Standard Operating Procedure after every evidence-collection round. The reasoner is deliberately separate from the planner: the planner decides what to investigate, while the reasoner evaluates what the collected evidence actually proves.
+
+The methodology follows five rules:
+
+1. **Evidence first.** Conclusions cannot introduce facts that are absent from the evidence ledger.
+2. **Challenge the leader.** The reasoner actively looks for evidence that could disprove the leading hypothesis, reducing confirmation bias.
+3. **Separate observation from interpretation.** Raw observations, findings, contradictions, gaps, and decisions are stored independently.
+4. **Cite every finding.** Findings contain evidence IDs, making the result reviewable and auditable.
+5. **Stop deterministically.** The model may recommend whether to continue, but deterministic sufficiency rules own the final stopping decision and confidence bounds.
+
+### Hybrid evidence reasoning
+
+```text
+Collected evidence
+      │
+      ├─ Deterministic hypothesis evaluator → confidence changes
+      ├─ Structured reasoner → assessments, findings, gaps
+      ├─ Contradiction detector → unresolved conflicts
+      └─ Sufficiency policy → final continue/stop decision
+```
+
+The result persists `evidence_assessments`, `findings`, `contradictions`, `evidence_gaps`, and `decision_history`. OpenAI reasoning is optional and uses strict Pydantic structured output. Fixture reasoning remains the default for deterministic demonstrations and tests.
+
+Configure OpenAI-assisted reasoning with:
+
+```bash
+export OPSMIND_REASONING_PROVIDER=openai
+export OPSMIND_REASONING_PROMPT_VERSION=reasoning-v1
+export OPSMIND_REASONING_FALLBACK_TO_FIXTURE=true
+```
+
+See [docs/INVESTIGATION_STANDARD.md](docs/INVESTIGATION_STANDARD.md) and [STEP_4_INTEGRATION.md](STEP_4_INTEGRATION.md).
