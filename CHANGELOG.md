@@ -1,6 +1,24 @@
 # Changelog
 
+## 2.0.0 — Visual AI Investigation Platform
+
+- Added presentation-ready investigation workspace models and API.
+- Added interactive evidence graph and node inspector.
+- Added confidence evolution, hypothesis board and contradiction visibility.
+- Added replayable investigation timeline.
+- Added visual resolution, verification and knowledge-capture workflows.
+- Added engineer and executive views plus deterministic judge experience.
+
 All notable changes to OpsMind are documented here. Versions are listed newest first.
+
+## 1.7.0 — Multi-Round Investigation and Resolution Intelligence
+
+- Added multi-round investigation lifecycle management.
+- Added deterministic hypothesis evolution and confidence history.
+- Added evidence-backed resolution planning.
+- Added containment, recovery, verification, rollback, prevention, and risk stages.
+- Added reusable knowledge capture for resolved incidents.
+- Added investigation lifecycle documentation and Step 5 integration guidance.
 
 ## 1.6.0 — Incident Experience
 

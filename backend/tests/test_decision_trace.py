@@ -42,7 +42,6 @@ async def test_decision_trace_evidence_references_are_valid() -> None:
 
     for explanation in trace.explanations:
         referenced = {
-            item.id
-            for item in explanation.supporting_evidence + explanation.contradicting_evidence
+            item.id for item in explanation.supporting_evidence + explanation.contradicting_evidence
         }
         assert referenced.issubset(evidence_ids)

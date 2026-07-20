@@ -87,8 +87,9 @@ class ConfidenceEvolutionService:
 
         if direction == ConfidenceDirection.INCREASED:
             if supporting_titles:
-                return "Confidence increased because new evidence supports this hypothesis: " + "; ".join(
-                    supporting_titles
+                return (
+                    "Confidence increased because new evidence supports this hypothesis: "
+                    + "; ".join(supporting_titles)
                 )
             return "Confidence increased because the accumulated evidence better supports this hypothesis."
 

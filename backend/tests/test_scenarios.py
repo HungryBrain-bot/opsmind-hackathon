@@ -20,10 +20,12 @@ async def test_each_scenario_reaches_distinct_verdict(scenario_id, expected):
     settings = Settings(demo_stage_delay_seconds=0)
     store = InvestigationStore()
     engine = InvestigationEngine(settings, store)
-    created = await engine.create(InvestigationRequest(
-        problem="Why is HF-PROD-02 not forwarding logs to the Splunk indexer cluster?",
-        scenario_id=scenario_id,
-    ))
+    created = await engine.create(
+        InvestigationRequest(
+            problem="Why is HF-PROD-02 not forwarding logs to the Splunk indexer cluster?",
+            scenario_id=scenario_id,
+        )
+    )
     await engine.run(created.investigation_id)
     result = await store.get(created.investigation_id)
     assert result.status == InvestigationStatus.COMPLETED

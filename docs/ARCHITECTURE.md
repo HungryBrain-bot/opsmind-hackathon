@@ -139,3 +139,65 @@ The MVP is read-only by design. Future remediation should require:
 - Secrets manager
 - RBAC and approval workflows
 - Observability and analytics
+
+## Step 5: Multi-round lifecycle and resolution boundary
+
+The investigation engine now owns a complete deterministic lifecycle:
+
+```text
+Planner
+  ↓
+Read-only evidence tools
+  ↓
+Hypothesis evaluator
+  ↓
+Hypothesis lifecycle manager
+  ↓
+Evidence sufficiency policy
+  ├── insufficient → next evidence round
+  └── sufficient   → resolution intelligence
+                         ↓
+                  verification plan
+                         ↓
+                   knowledge capture
+```
+
+### Deterministic ownership
+
+The following decisions remain in code rather than unconstrained model output:
+
+- maximum investigation rounds;
+- evidence sufficiency and stop decisions;
+- confidence calculation;
+- hypothesis promotion, waiting, and rejection;
+- lifecycle state transitions;
+- human-approval requirements;
+- event ordering and persisted audit state.
+
+### Resolution intelligence
+
+`ResolutionIntelligenceService` converts an evidence-backed verdict into structured actions. Each action carries its stage, rationale, expected outcome, evidence references, confidence, risk, approval requirement, and rollback guidance.
+
+### Operational memory
+
+`KnowledgeCaptureService` creates a reusable knowledge pattern from a completed investigation. It stores symptoms, root cause, resolution summary, verification targets, entities, evidence categories, tags, and confidence. The MVP stores the object in the investigation result; a future retrieval layer can index these patterns for case-based planning.
+
+
+## v2.0 Presentation Layer
+
+The investigation engine remains the source of truth. `InvestigationWorkspaceBuilder` transforms the canonical investigation result into graph, timeline, confidence, hypothesis, resolution, verification and playback models. The browser renders these models without reproducing investigation logic.
+
+```text
+Enterprise Sources → Investigation Engine → InvestigationResult
+                                              │
+                                              ▼
+                              InvestigationWorkspaceBuilder
+                                              │
+                    ┌─────────────┬────────────┼─────────────┐
+                    ▼             ▼            ▼             ▼
+              Evidence Graph  Confidence   Resolution    Playback
+                    └─────────────┴────────────┴─────────────┘
+                                              │
+                                              ▼
+                              Visual Investigation Workspace
+```

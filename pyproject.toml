@@ -4,8 +4,8 @@ build-backend = "setuptools.build_meta"
 
 [project]
 name = "opsmind-mvp"
-version = "1.6.0"
-description = "OpsMind enterprise investigation workspace - multi-scenario evidence-backed investigation engine with persistent operational memory"
+version = "2.0.0"
+description = "OpsMind visual AI investigation platform with evidence graphs, playback and resolution intelligence"
 requires-python = ">=3.11"
 dependencies = [
   "fastapi>=0.115,<1.0",

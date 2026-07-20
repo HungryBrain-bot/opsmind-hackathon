@@ -16,7 +16,7 @@ from app.core.settings import get_settings
 def create_app() -> FastAPI:
     configure_logging()
     settings = get_settings()
-    app = FastAPI(title=settings.app_name, version="1.6.0")
+    app = FastAPI(title=settings.app_name, version="2.0.0")
     app.add_middleware(
         CORSMiddleware,
         allow_origins=["*"],

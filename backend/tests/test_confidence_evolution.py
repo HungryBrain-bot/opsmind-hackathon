@@ -44,10 +44,7 @@ async def test_tls_hypothesis_finishes_as_leader_with_increases() -> None:
 
     assert leader.id == "H-001"
     assert leader.confidence >= 0.9
-    assert any(
-        change.direction.value == "increased"
-        for change in leader.confidence_history
-    )
+    assert any(change.direction.value == "increased" for change in leader.confidence_history)
 
 
 async def test_rejected_hypotheses_have_explanations_when_present() -> None:

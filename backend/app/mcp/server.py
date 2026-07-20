@@ -3,6 +3,7 @@
 Run manually:
     python -m app.mcp.server
 """
+
 from mcp.server.fastmcp import FastMCP
 
 from app.investigation.fixtures import heavy_forwarder_evidence

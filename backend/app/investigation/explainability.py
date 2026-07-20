@@ -21,9 +21,7 @@ class DecisionTraceBuilder:
         evidence_by_id = {item.id: item for item in result.evidence}
         explanations = []
 
-        for hypothesis in sorted(
-            result.hypotheses, key=lambda item: item.confidence, reverse=True
-        ):
+        for hypothesis in sorted(result.hypotheses, key=lambda item: item.confidence, reverse=True):
             supporting = [
                 self._reference(evidence_by_id[evidence_id])
                 for evidence_id in hypothesis.supporting_evidence_ids

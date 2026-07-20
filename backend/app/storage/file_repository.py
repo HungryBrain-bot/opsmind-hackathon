@@ -69,8 +69,18 @@ class FileInvestigationRepository(InvestigationRepository):
                 updated_at=updated,
             )
             haystack = " ".join(
-                filter(None, [item.investigation_id, item.problem, item.environment, item.priority,
-                              item.root_cause, result.verdict, result.stop_reason.summary])
+                filter(
+                    None,
+                    [
+                        item.investigation_id,
+                        item.problem,
+                        item.environment,
+                        item.priority,
+                        item.root_cause,
+                        result.verdict,
+                        result.stop_reason.summary,
+                    ],
+                )
             ).lower()
             if query and query.lower() not in haystack:
                 continue

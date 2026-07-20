@@ -71,6 +71,10 @@ class ToolRegistry:
     def _scenario_handler(name: str) -> ToolHandler:
         async def handler(arguments: dict) -> list[Evidence]:
             scenario_id = arguments.get("scenario_id", "certificate_expiry")
-            return [item.model_copy(deep=True) for item in scenario_evidence(scenario_id) if item.source == name]
+            return [
+                item.model_copy(deep=True)
+                for item in scenario_evidence(scenario_id)
+                if item.source == name
+            ]
 
         return handler
