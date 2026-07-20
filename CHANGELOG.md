@@ -2,6 +2,15 @@
 
 All notable changes to OpsMind are documented here. Versions are listed newest first.
 
+## 1.7.0 — Multi-Round Investigation and Resolution Intelligence
+
+- Added multi-round investigation lifecycle management.
+- Added deterministic hypothesis evolution and confidence history.
+- Added evidence-backed resolution planning.
+- Added containment, recovery, verification, rollback, prevention, and risk stages.
+- Added reusable knowledge capture for resolved incidents.
+- Added investigation lifecycle documentation and Step 5 integration guidance.
+
 ## 1.6.0 — Incident Experience
 
 - Replaced demo dataset language with realistic production incident cases.

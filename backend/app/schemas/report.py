@@ -1,6 +1,9 @@
 from datetime import datetime
 from pydantic import BaseModel, Field
 from app.schemas.explainability import InvestigationDecisionTrace
+from app.schemas.knowledge import KnowledgePattern
+from app.schemas.lifecycle import InvestigationRound
+from app.schemas.resolution import ResolutionPlan
 
 class InvestigationReportEvidence(BaseModel):
     id: str
@@ -27,3 +30,7 @@ class InvestigationReport(BaseModel):
     evidence: list[InvestigationReportEvidence] = Field(default_factory=list)
     recommended_actions: list[str] = Field(default_factory=list)
     tools_used: list[str] = Field(default_factory=list)
+    rounds: list[InvestigationRound] = Field(default_factory=list)
+    confidence_history: list[float] = Field(default_factory=list)
+    resolution_plan: ResolutionPlan | None = None
+    knowledge_pattern: KnowledgePattern | None = None

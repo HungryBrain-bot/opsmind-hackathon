@@ -29,6 +29,10 @@ class InvestigationReportBuilder:
             ],
             recommended_actions=result.recommended_actions,
             tools_used=result.tools_used,
+            rounds=result.rounds,
+            confidence_history=result.confidence_history,
+            resolution_plan=result.resolution_plan,
+            knowledge_pattern=result.knowledge_pattern,
         )
 
     def to_markdown(self, result: InvestigationResult) -> str:
@@ -69,9 +73,45 @@ class InvestigationReportBuilder:
             lines += [f"### {e.id} — {e.title}", "", e.content, "",
                       f"- Source: {e.source}", f"- Category: {e.category}",
                       f"- Reliability: {e.reliability}", ""]
+        lines += ["## Investigation rounds", ""]
+        for item in report.rounds:
+            lines += [
+                f"### Round {item.number} — {item.decision.value}", "",
+                f"- Objective: {item.objective}",
+                f"- Leading hypothesis: {item.leading_hypothesis_id or 'None'}",
+                f"- Confidence: {round(item.leading_confidence * 100)}%",
+                f"- Decision: {item.decision_reason}", "",
+            ]
+        lines += ["## Resolution intelligence", ""]
+        if report.resolution_plan:
+            lines += [f"**Root cause:** {report.resolution_plan.root_cause}", ""]
+            for action in report.resolution_plan.actions:
+                lines += [
+                    f"### {action.stage.value.title()} — {action.action}", "",
+                    f"- Why: {action.rationale}",
+                    f"- Expected outcome: {action.expected_outcome}",
+                    f"- Risk: {action.risk.value}",
+                    f"- Confidence: {round(action.confidence * 100)}%",
+                    f"- Evidence: {', '.join(action.evidence_ids) or 'None'}",
+                ]
+                if action.rollback_action:
+                    lines.append(f"- Rollback: {action.rollback_action}")
+                lines.append("")
+            lines += ["### Verification checklist", ""]
+            lines += [
+                f"- [ ] {item.metric}: {item.condition} — expected {item.expected_value}"
+                for item in report.resolution_plan.verification_criteria
+            ]
+            lines.append("")
+        else:
+            lines += ["No resolution plan was generated.", ""]
         lines += ["## Recommended actions", ""]
         lines += ([f"{i}. {a}" for i, a in enumerate(report.recommended_actions, 1)]
                   or ["No automated recommendations were generated."])
+        if report.knowledge_pattern:
+            lines += ["", "## Knowledge capture", "",
+                      f"Reusable pattern: **{report.knowledge_pattern.title}**", "",
+                      f"Tags: {', '.join(report.knowledge_pattern.tags)}"]
         lines += ["", "## Tools used", ""]
         lines += ([f"- {t}" for t in report.tools_used] or ["- None"])
         lines += ["", "---", "",
