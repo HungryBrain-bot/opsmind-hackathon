@@ -489,7 +489,15 @@ Expected output:
 42 passed
 ```
 
-### Start OpsMind
+## ▶️ Running OpsMind
+
+OpsMind supports two execution modes.
+
+---
+
+### 1. Golden Demo (Recommended)
+
+Runs the bundled investigation without requiring an OpenAI API key.
 
 ```bash
 ./run-demo.sh
@@ -501,22 +509,51 @@ Open:
 http://127.0.0.1:8000
 ```
 
+This mode is ideal for:
+
+- Demo recordings
+- GitHub evaluation
+- Offline demonstrations
+- Predictable investigations
+
 ---
 
-## ⚙️ Configuration
+### 2. AI Investigation Mode
 
-Create a `.env` file:
+Runs OpsMind using OpenAI reasoning models.
+
+First configure your API key:
+
+```bash
+export OPENAI_API_KEY="sk-your-api-key"
+```
+
+or create a `.env` file:
 
 ```env
-OPENAI_API_KEY=your_api_key
+OPENAI_API_KEY=sk-your-api-key
 OPENAI_MODEL=gpt-5.6
+```
 
-HOST=0.0.0.0
-PORT=8000
+Then start AI mode:
 
-LOG_LEVEL=INFO
+```bash
+./run-ai.sh
+```
 
-DEMO_MODE=true
+Open:
+
+```text
+http://127.0.0.1:8000
+```
+
+This mode enables:
+
+- AI investigation planning
+- Multi-round reasoning
+- Evidence interpretation
+- Executive summaries
+- GPT-powered root cause analysis
 ```
 
 ---
