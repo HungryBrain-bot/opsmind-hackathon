@@ -1,13 +1,15 @@
 import asyncio
 import logging
-from datetime import datetime, timezone
+from datetime import UTC, datetime
 from uuid import uuid4
 
 from app.core.settings import Settings
 from app.investigation.confidence import ConfidenceEvolutionService
 from app.investigation.evaluator import HypothesisEvaluator
+from app.investigation.hypothesis_manager import HypothesisManager
+from app.investigation.knowledge_capture import KnowledgeCaptureService
 from app.investigation.planner import InvestigationPlanner, create_planner
-from app.investigation.reasoning import EvidenceReasoner
+from app.investigation.resolution import ResolutionIntelligenceService
 from app.investigation.store import InvestigationStore
 from app.investigation.sufficiency import EvidenceSufficiencyEngine
 from app.investigation.tools import ToolRegistry
@@ -21,12 +23,17 @@ from app.schemas.investigation import (
     StopReason,
     TimelineEvent,
 )
+from app.schemas.lifecycle import (
+    InvestigationLifecyclePhase,
+    InvestigationRound,
+    RoundDecision,
+)
 
 logger = logging.getLogger(__name__)
 
 
 class InvestigationEngine:
-    """Bounded investigation loop driven by a plan, read-only tools and stop rules."""
+    """Bounded, multi-round investigation lifecycle with evidence-backed resolution."""
 
     def __init__(
         self,
@@ -41,8 +48,10 @@ class InvestigationEngine:
         self.planner = planner or create_planner(settings, self.tools.names())
         self.evaluator = HypothesisEvaluator()
         self.confidence_evolution = ConfidenceEvolutionService()
+        self.hypothesis_manager = HypothesisManager()
         self.sufficiency = EvidenceSufficiencyEngine(settings.sufficiency_threshold)
-        self.reasoner = EvidenceReasoner(settings, self.tools.names())
+        self.resolution = ResolutionIntelligenceService()
+        self.knowledge_capture = KnowledgeCaptureService()
 
     async def create(self, request: InvestigationRequest) -> InvestigationResult:
         investigation_id = f"INV-{uuid4().hex[:8].upper()}"
@@ -57,6 +66,7 @@ class InvestigationEngine:
             progress_percent=0,
             missing_evidence=["Investigation plan"],
             next_action="Interpret the submitted operational symptom",
+            lifecycle_phase=InvestigationLifecyclePhase.INTAKE,
         )
         await self.store.create(result)
         await self._emit(
@@ -70,6 +80,7 @@ class InvestigationEngine:
     async def run(self, investigation_id: str) -> None:
         result = await self.store.get(investigation_id)
         try:
+            result.lifecycle_phase = InvestigationLifecyclePhase.INTAKE
             await self._transition(
                 result,
                 InvestigationStatus.UNDERSTANDING,
@@ -93,6 +104,7 @@ class InvestigationEngine:
                 "Investigation plan generated",
                 {"usage": result.planner_usage.model_dump(mode="json")},
             )
+            result.lifecycle_phase = InvestigationLifecyclePhase.PLANNING
             result.investigation_goal = plan.goal
             result.hypotheses = [item.model_copy(deep=True) for item in plan.hypotheses]
             for hypothesis in result.hypotheses:
@@ -107,7 +119,10 @@ class InvestigationEngine:
                 InvestigationStatus.PLANNING,
                 "Planning investigation",
                 20,
-                f"{len(result.hypotheses)} hypotheses and {len(plan.evidence_requirements)} evidence requirements generated",
+                (
+                    f"{len(result.hypotheses)} hypotheses and "
+                    f"{len(plan.evidence_requirements)} evidence requirements generated"
+                ),
                 plan.goal,
                 InvestigationEventType.HYPOTHESES_GENERATED,
                 {
@@ -129,11 +144,14 @@ class InvestigationEngine:
             sufficient = False
 
             for round_number, batch in enumerate(batches, start=1):
-                await self._start_round(result, round_number, batch)
+                investigation_round = await self._start_round(result, round_number, batch)
                 for requirement in batch:
                     await self._collect_requirement(result, requirement)
 
-                previous = {item.id: item.confidence for item in result.hypotheses}
+                result.lifecycle_phase = InvestigationLifecyclePhase.REASONING
+                previous = {
+                    item.id: (item.confidence, item.status) for item in result.hypotheses
+                }
                 previous_supporting = {
                     item.id: set(item.supporting_evidence_ids) for item in result.hypotheses
                 }
@@ -145,19 +163,24 @@ class InvestigationEngine:
                 confidence_changes = [
                     self.confidence_evolution.record(
                         item,
-                        previous[item.id],
+                        previous[item.id][0],
                         previous_supporting[item.id],
                         previous_contradicting[item.id],
                         evidence_by_id,
                     )
                     for item in result.hypotheses
                 ]
+                evolution = self.hypothesis_manager.evolve(
+                    result.hypotheses, round_number, previous
+                )
+                result.hypothesis_evolution.extend(evolution)
                 result.missing_evidence = [
                     item.description
                     for item in requirements
                     if item.preferred_tool not in result.tools_used
                 ]
                 leading = max(result.hypotheses, key=lambda item: item.confidence)
+                result.confidence_history.append(leading.confidence)
                 result.next_action = (
                     "Evaluate evidence sufficiency"
                     if not result.missing_evidence
@@ -167,7 +190,7 @@ class InvestigationEngine:
                 await self._emit(
                     result,
                     InvestigationEventType.HYPOTHESIS_UPDATED,
-                    "Hypotheses re-evaluated",
+                    "Hypotheses evolved after evidence evaluation",
                     {
                         "changes": [
                             {
@@ -180,6 +203,7 @@ class InvestigationEngine:
                             }
                             for change in confidence_changes
                         ],
+                        "evolution": [item.model_dump(mode="json") for item in evolution],
                         "leading_hypothesis": leading.id,
                     },
                 )
@@ -204,36 +228,32 @@ class InvestigationEngine:
                     },
                 )
 
-                reasoning = await self.reasoner.evaluate(
-                    round_number=round_number,
-                    hypotheses=result.hypotheses,
-                    evidence=result.evidence,
-                    deterministic_sufficient=stop_reason.sufficient,
+                sufficient = stop_reason.sufficient
+                decision = (
+                    RoundDecision.RESOLVE
+                    if sufficient
+                    else (
+                        RoundDecision.STOP_INCONCLUSIVE
+                        if round_number >= len(batches)
+                        else RoundDecision.CONTINUE
+                    )
                 )
-                result.reasoning_usage = self.reasoner.last_usage.model_copy(deep=True)
-                result.evidence_assessments = reasoning.assessments
-                result.findings = reasoning.findings
-                result.contradictions = reasoning.contradictions
-                result.evidence_gaps = reasoning.gaps
-                result.decision_history.append(reasoning.decision)
-                if reasoning.decision.next_actions:
-                    result.next_action = reasoning.decision.next_actions[0]
+                self._complete_round(
+                    investigation_round,
+                    result,
+                    leading.id,
+                    leading.confidence,
+                    decision,
+                    stop_reason.summary,
+                )
                 await self.store.update(result)
                 await self._emit(
                     result,
-                    InvestigationEventType.REASONING_COMPLETED,
-                    "Evidence reasoning completed",
-                    {
-                        "round": round_number,
-                        "finding_count": len(reasoning.findings),
-                        "contradiction_count": len(reasoning.contradictions),
-                        "gap_count": len(reasoning.gaps),
-                        "decision": reasoning.decision.model_dump(mode="json"),
-                        "usage": result.reasoning_usage.model_dump(mode="json"),
-                    },
+                    InvestigationEventType.ROUND_COMPLETED,
+                    f"Evidence round {round_number} completed",
+                    {"round": investigation_round.model_dump(mode="json")},
                 )
-                if stop_reason.sufficient:
-                    sufficient = True
+                if sufficient:
                     break
 
             await self._finalize(result, sufficient)
@@ -251,21 +271,32 @@ class InvestigationEngine:
                 {"error": str(exc)},
             )
 
-    async def _start_round(self, result: InvestigationResult, number: int, batch: list) -> None:
+    async def _start_round(
+        self, result: InvestigationResult, number: int, batch: list
+    ) -> InvestigationRound:
         result.round_number = number
         result.status = InvestigationStatus.COLLECTING
+        result.lifecycle_phase = InvestigationLifecyclePhase.EVIDENCE_COLLECTION
         result.current_phase = f"Evidence round {number}"
         result.progress_percent = min(85, 25 + number * 20)
         objective = "; ".join(item.description for item in batch)
+        investigation_round = InvestigationRound(
+            number=number,
+            started_at=datetime.now(UTC),
+            objective=objective,
+            requirement_ids=[item.id for item in batch],
+        )
+        result.rounds.append(investigation_round)
         self._timeline(result, result.current_phase, f"Round {number} started", objective)
         await self.store.update(result)
         await self._emit(
             result,
             InvestigationEventType.ROUND_STARTED,
             f"Evidence round {number} started",
-            {"round": number, "requirements": [item.id for item in batch]},
+            {"round": number, "requirements": investigation_round.requirement_ids},
         )
         await self._pause()
+        return investigation_round
 
     async def _collect_requirement(self, result: InvestigationResult, requirement) -> None:
         result.next_action = f"Run read-only tool: {requirement.preferred_tool}"
@@ -284,7 +315,11 @@ class InvestigationEngine:
 
         items = await self.tools.execute(
             requirement.preferred_tool,
-            {"environment": result.environment, "problem": result.problem, "scenario_id": result.scenario_id},
+            {
+                "environment": result.environment,
+                "problem": result.problem,
+                "scenario_id": result.scenario_id,
+            },
         )
         if requirement.preferred_tool not in result.tools_used:
             result.tools_used.append(requirement.preferred_tool)
@@ -299,6 +334,8 @@ class InvestigationEngine:
             if any(existing.id == item.id for existing in result.evidence):
                 continue
             result.evidence.append(item)
+            if result.rounds:
+                result.rounds[-1].evidence_ids.append(item.id)
             self._timeline(result, result.current_phase, item.title, item.content)
             await self.store.update(result)
             await self._emit(
@@ -309,10 +346,26 @@ class InvestigationEngine:
             )
             await self._pause()
 
+    def _complete_round(
+        self,
+        investigation_round: InvestigationRound,
+        result: InvestigationResult,
+        leading_hypothesis_id: str,
+        leading_confidence: float,
+        decision: RoundDecision,
+        reason: str,
+    ) -> None:
+        investigation_round.completed_at = datetime.now(UTC)
+        investigation_round.leading_hypothesis_id = leading_hypothesis_id
+        investigation_round.leading_confidence = leading_confidence
+        investigation_round.missing_evidence = list(result.missing_evidence)
+        investigation_round.decision = decision
+        investigation_round.decision_reason = reason
+
     async def _finalize(self, result: InvestigationResult, sufficient: bool) -> None:
         result.status = InvestigationStatus.EVALUATING
         result.current_phase = "Final evaluation"
-        result.progress_percent = 94
+        result.progress_percent = 90
         await self.store.update(result)
         await self._pause()
 
@@ -321,15 +374,19 @@ class InvestigationEngine:
             leading.status = HypothesisStatus.SUPPORTED
             result.verdict_evidence_ids = sorted(set(leading.supporting_evidence_ids))
             from app.investigation.scenarios import SCENARIOS
+
             scenario = SCENARIOS.get(result.scenario_id, SCENARIOS["certificate_expiry"])
             result.verdict = scenario.verdict
             result.recommended_actions = scenario.recommended_actions
+            await self._build_resolution_lifecycle(result, leading)
             result.status = InvestigationStatus.COMPLETED
-            result.current_phase = "Verdict ready"
-            result.next_action = "Human review and approved remediation"
-            message = "Evidence-backed verdict generated"
+            result.lifecycle_phase = InvestigationLifecyclePhase.COMPLETE
+            result.current_phase = "Resolution ready"
+            result.next_action = "Human review, approved remediation and verification"
+            message = "Evidence-backed verdict and resolution plan generated"
         else:
             result.status = InvestigationStatus.INCONCLUSIVE
+            result.lifecycle_phase = InvestigationLifecyclePhase.INCONCLUSIVE
             result.current_phase = "Inconclusive"
             result.next_action = "Request additional evidence or human analysis"
             result.verdict = None
@@ -359,6 +416,74 @@ class InvestigationEngine:
             InvestigationEventType.INVESTIGATION_COMPLETED,
             "Investigation completed",
             {"stop_reason": result.stop_reason.summary, "sufficient": sufficient},
+        )
+
+    async def _build_resolution_lifecycle(self, result: InvestigationResult, leading) -> None:
+        result.status = InvestigationStatus.RESOLVING
+        result.lifecycle_phase = InvestigationLifecyclePhase.RESOLUTION
+        result.current_phase = "Resolution intelligence"
+        result.progress_percent = 94
+        result.resolution_plan = self.resolution.build(result, leading)
+        result.recommended_actions = [
+            item.action for item in result.resolution_plan.actions
+        ]
+        self._timeline(
+            result,
+            result.current_phase,
+            "Resolution plan generated",
+            (
+                f"{len(result.resolution_plan.actions)} evidence-backed actions created "
+                "with approval and rollback guidance."
+            ),
+        )
+        await self.store.update(result)
+        await self._emit(
+            result,
+            InvestigationEventType.RESOLUTION_GENERATED,
+            "Resolution intelligence generated",
+            {"resolution_plan": result.resolution_plan.model_dump(mode="json")},
+        )
+
+        result.status = InvestigationStatus.VERIFYING
+        result.lifecycle_phase = InvestigationLifecyclePhase.VERIFICATION
+        result.current_phase = "Verification planning"
+        result.progress_percent = 97
+        self._timeline(
+            result,
+            result.current_phase,
+            "Verification criteria defined",
+            f"{len(result.resolution_plan.verification_criteria)} recovery checks are pending.",
+        )
+        await self.store.update(result)
+        await self._emit(
+            result,
+            InvestigationEventType.VERIFICATION_PLANNED,
+            "Recovery verification planned",
+            {
+                "criteria": [
+                    item.model_dump(mode="json")
+                    for item in result.resolution_plan.verification_criteria
+                ]
+            },
+        )
+
+        result.status = InvestigationStatus.CAPTURING_KNOWLEDGE
+        result.lifecycle_phase = InvestigationLifecyclePhase.KNOWLEDGE_CAPTURE
+        result.current_phase = "Knowledge capture"
+        result.progress_percent = 99
+        result.knowledge_pattern = self.knowledge_capture.capture(result)
+        self._timeline(
+            result,
+            result.current_phase,
+            "Reusable incident pattern captured",
+            result.knowledge_pattern.title,
+        )
+        await self.store.update(result)
+        await self._emit(
+            result,
+            InvestigationEventType.KNOWLEDGE_CAPTURED,
+            "Investigation knowledge captured",
+            {"knowledge_pattern": result.knowledge_pattern.model_dump(mode="json")},
         )
 
     @staticmethod
@@ -402,7 +527,7 @@ class InvestigationEngine:
     @staticmethod
     def _timeline(result: InvestigationResult, phase: str, title: str, detail: str) -> None:
         result.timeline.append(
-            TimelineEvent(timestamp=datetime.now(timezone.utc), phase=phase, title=title, detail=detail)
+            TimelineEvent(timestamp=datetime.now(UTC), phase=phase, title=title, detail=detail)
         )
 
     async def _emit(
@@ -417,7 +542,7 @@ class InvestigationEngine:
             sequence=len(existing) + 1,
             investigation_id=result.investigation_id,
             type=event_type,
-            timestamp=datetime.now(timezone.utc),
+            timestamp=datetime.now(UTC),
             phase=result.current_phase,
             message=message,
             data=data,

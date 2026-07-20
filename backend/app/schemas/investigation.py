@@ -6,13 +6,9 @@ from pydantic import BaseModel, Field
 
 from app.schemas.evidence import Evidence
 from app.schemas.hypothesis import Hypothesis
-from app.schemas.reasoning import (
-    EvidenceAssessment,
-    EvidenceContradiction,
-    EvidenceGap,
-    InvestigationFinding,
-    ReasoningDecision,
-)
+from app.schemas.knowledge import KnowledgePattern
+from app.schemas.lifecycle import HypothesisEvolution, InvestigationLifecyclePhase, InvestigationRound
+from app.schemas.resolution import ResolutionPlan
 from app.observability.telemetry import ModelUsage
 
 
@@ -22,6 +18,9 @@ class InvestigationStatus(StrEnum):
     PLANNING = "planning"
     COLLECTING = "collecting"
     EVALUATING = "evaluating"
+    RESOLVING = "resolving"
+    VERIFYING = "verifying"
+    CAPTURING_KNOWLEDGE = "capturing_knowledge"
     COMPLETED = "completed"
     INCONCLUSIVE = "inconclusive"
     FAILED = "failed"
@@ -42,7 +41,10 @@ class InvestigationEventType(StrEnum):
     INVESTIGATION_COMPLETED = "investigation_completed"
     INVESTIGATION_FAILED = "investigation_failed"
     PLANNER_COMPLETED = "planner_completed"
-    REASONING_COMPLETED = "reasoning_completed"
+    ROUND_COMPLETED = "round_completed"
+    RESOLUTION_GENERATED = "resolution_generated"
+    VERIFICATION_PLANNED = "verification_planned"
+    KNOWLEDGE_CAPTURED = "knowledge_captured"
 
 
 class InvestigationRequest(BaseModel):
@@ -96,13 +98,13 @@ class InvestigationResult(BaseModel):
     planned_evidence: list[dict[str, Any]] = Field(default_factory=list)
     tools_used: list[str] = Field(default_factory=list)
     planner_usage: ModelUsage = Field(default_factory=ModelUsage)
-    reasoning_usage: ModelUsage = Field(default_factory=ModelUsage)
-    evidence_assessments: list[EvidenceAssessment] = Field(default_factory=list)
-    findings: list[InvestigationFinding] = Field(default_factory=list)
-    contradictions: list[EvidenceContradiction] = Field(default_factory=list)
-    evidence_gaps: list[EvidenceGap] = Field(default_factory=list)
-    decision_history: list[ReasoningDecision] = Field(default_factory=list)
     verdict_evidence_ids: list[str] = Field(default_factory=list)
+    lifecycle_phase: InvestigationLifecyclePhase = InvestigationLifecyclePhase.INTAKE
+    rounds: list[InvestigationRound] = Field(default_factory=list)
+    hypothesis_evolution: list[HypothesisEvolution] = Field(default_factory=list)
+    resolution_plan: ResolutionPlan | None = None
+    knowledge_pattern: KnowledgePattern | None = None
+    confidence_history: list[float] = Field(default_factory=list)
 
 
 class InvestigationEvent(BaseModel):

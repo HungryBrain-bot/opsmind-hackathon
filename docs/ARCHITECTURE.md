@@ -64,7 +64,7 @@ The engine coordinates the investigation lifecycle:
 
 ### Investigation Packs
 
-Packs contain domain-specific knowledge while keeping the core engine reusable. The v1.7 release contains a Splunk Heavy Forwarder pack with multiple realistic incident paths.
+Packs contain domain-specific knowledge while keeping the core engine reusable. The v1.6 release contains a Splunk Heavy Forwarder pack with multiple realistic incident paths.
 
 A pack can define:
 
@@ -117,9 +117,7 @@ Uses repeatable local evidence paths for demonstrations and tests. No external A
 
 ### OpenAI-assisted planning mode
 
-The engine factory selects `OpenAIInvestigationEngine`, which uses a versioned prompt builder and a dedicated Responses API adapter. Pydantic validates the structured response, then OpsMind applies semantic checks for tool authorization, ID stability, hypothesis coverage, and maximum rounds. Invalid plans are retried within a configured bound and may fall back to the deterministic fixture planner.
-
-OpenAI proposes a plan, but the OpsMind engine remains responsible for tool authorization, evidence normalization, confidence updates, sufficiency checks, verdict generation, persistence, and the audit trail.
+OpenAI can propose a plan, but the OpsMind engine remains responsible for tool authorization, evidence normalization, confidence updates, sufficiency checks, and the audit trail.
 
 ## Safety model
 
@@ -142,30 +140,44 @@ The MVP is read-only by design. Future remediation should require:
 - RBAC and approval workflows
 - Observability and analytics
 
-## Evidence reasoning boundary (v1.8)
+## Step 5: Multi-round lifecycle and resolution boundary
 
-The evidence reasoning layer executes after deterministic hypothesis evaluation and before the investigation decides whether to continue. It is intentionally split into policy and judgment:
-
-- `reasoning_prompt.py` defines the versioned Investigation SOP.
-- `openai_reasoning_client.py` is the only vendor-specific model boundary.
-- `reasoning.py` coordinates fixture/OpenAI reasoning and validates references.
-- `contradictions.py` deterministically records hypothesis-level conflicts.
-- `evidence_summary.py` builds evidence-cited findings for offline mode.
-- `sufficiency.py` remains the authoritative stopping policy.
+The investigation engine now owns a complete deterministic lifecycle:
 
 ```text
-Planner → Tools → Evidence normalization
-                    │
-                    ▼
-          HypothesisEvaluator
-                    │
-          ┌─────────┴─────────┐
-          ▼                   ▼
- Structured Reasoner   Sufficiency Policy
-          │                   │
-          └─────────┬─────────┘
-                    ▼
-          Audited decision history
+Planner
+  ↓
+Read-only evidence tools
+  ↓
+Hypothesis evaluator
+  ↓
+Hypothesis lifecycle manager
+  ↓
+Evidence sufficiency policy
+  ├── insufficient → next evidence round
+  └── sufficient   → resolution intelligence
+                         ↓
+                  verification plan
+                         ↓
+                   knowledge capture
 ```
 
-The model cannot directly assign numerical confidence, invoke arbitrary tools, or override the stopping policy. This hybrid design keeps model judgment useful while preserving repeatability, safety, and auditability.
+### Deterministic ownership
+
+The following decisions remain in code rather than unconstrained model output:
+
+- maximum investigation rounds;
+- evidence sufficiency and stop decisions;
+- confidence calculation;
+- hypothesis promotion, waiting, and rejection;
+- lifecycle state transitions;
+- human-approval requirements;
+- event ordering and persisted audit state.
+
+### Resolution intelligence
+
+`ResolutionIntelligenceService` converts an evidence-backed verdict into structured actions. Each action carries its stage, rationale, expected outcome, evidence references, confidence, risk, approval requirement, and rollback guidance.
+
+### Operational memory
+
+`KnowledgeCaptureService` creates a reusable knowledge pattern from a completed investigation. It stores symptoms, root cause, resolution summary, verification targets, entities, evidence categories, tags, and confidence. The MVP stores the object in the investigation result; a future retrieval layer can index these patterns for case-based planning.
