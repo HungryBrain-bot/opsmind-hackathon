@@ -1,521 +1,164 @@
+
 # OpsMind
 
-<p align="center">
+> **AI Investigation Platform powered by OpenAI**
 
-# LLMs answer from what they know.
+> **LLMs answer questions. OpsMind investigates enterprise incidents.**
 
-# **OpsMind investigates what your enterprise knows.**
+![Banner](docs/images/hero-banner.png)
 
-### AI-Powered Incident Investigation Engine
+## Demo
 
-![Python](https://img.shields.io/badge/Python-3.11+-3776AB?logo=python&logoColor=white)
-![FastAPI](https://img.shields.io/badge/FastAPI-Backend-009688?logo=fastapi)
-![License](https://img.shields.io/badge/License-Apache%202.0-orange)
-![Tests](https://img.shields.io/badge/Tests-Passing-brightgreen)
+![Demo](docs/images/demo.gif)
 
-</p>
+## Demo Highlights
 
----
+| Metric | Value |
+|---|---|
+| Golden Demo | ~2 minute walkthrough |
+| Multi-round reasoning | ✅ |
+| Evidence-backed conclusions | ✅ |
+| Confidence evolution | ✅ |
+| Knowledge capture | ✅ |
+| Investigation replay | ✅ |
+| Powered by | OpenAI GPT-5.6 |
 
-## Overview
+## The Problem
 
-OpsMind is an AI-powered Incident Investigation Engine that helps platform engineers investigate operational incidents by collecting enterprise evidence, evaluating competing hypotheses, and producing evidence-backed conclusions.
+Engineers investigate incidents across multiple tools, manually correlating evidence and documenting findings.
 
-Unlike traditional AI assistants that answer immediately, OpsMind investigates enterprise systems before reaching a conclusion.
+## The Solution
 
----
+OpsMind performs structured investigations by planning, collecting evidence, evolving hypotheses, producing resolutions, verifying recovery, and capturing knowledge.
 
-## 🎥 Demo
+## Why OpsMind?
 
-![OpsMind Demo](docs/images/demo.gif)
+| Traditional AI | OpsMind |
+|---|---|
+| Answers prompts | Conducts investigations |
+| Static response | Multi-round reasoning |
+| No replay | Replayable investigations |
+| No knowledge memory | Knowledge capture |
 
----
+## Product Images
 
-# The Problem
+Replace these placeholders:
 
-During production incidents, engineers spend valuable time switching between multiple systems before they can even begin reasoning about the problem.
+- docs/images/dashboard.png
+- docs/images/workspace.png
+- docs/images/graph.png
+- docs/images/timeline.png
+- docs/images/confidence.png
+- docs/images/hypothesis.png
+- docs/images/resolution.png
+- docs/images/verification.png
+- docs/images/architecture.png
+- docs/images/golden-demo.png
 
-Typical investigation sources include:
-
-- Splunk
-- Microsoft Sentinel
-- Configuration Files
-- SSH Sessions
-- Jira
-- Runbooks
-- Internal Documentation
-- Historical Incidents
-
-The investigation—not the remediation—is usually the slowest part.
-
----
-
-# Why Not Just Use ChatGPT?
-
-General-purpose LLMs answer from what they already know.
-
-Production incidents are different.
-
-The answer rarely exists inside the model.
-
-It exists inside your enterprise.
-
-OpsMind doesn't ask AI to guess.
-
-OpsMind asks AI to investigate.
-
-Instead of immediately producing an answer, OpsMind:
-
-1. Plans an investigation
-2. Generates competing hypotheses
-3. Collects enterprise evidence
-4. Rejects incorrect hypotheses
-5. Produces an evidence-backed verdict
-
-The result is not simply an AI response—it is an explainable investigation.
-
----
-
-# What Makes OpsMind Different?
-
-| Traditional AI | Retrieval-Augmented Generation | OpsMind |
-|----------------|-------------------------------|----------|
-| Answers immediately | Retrieves documents | Plans an investigation |
-| Uses pretrained knowledge | Uses retrieved context | Builds enterprise evidence |
-| Single response | Context-aware response | Multi-step reasoning |
-| No investigation | No decision trace | Explainable investigation |
-| Cannot reject hypotheses | Returns retrieved information | Rejects incorrect hypotheses |
-| Limited operational memory | Limited to retrieved documents | Investigation history |
-
----
-
-# What OpsMind Does
-
-Every investigation follows the same lifecycle.
+## Investigation Workflow
 
 ```text
 Incident
-
-↓
-
-Investigation Planner
-
-↓
-
-Generate Hypotheses
-
-↓
-
-Collect Enterprise Evidence
-
-↓
-
-Evaluate Hypotheses
-
-↓
-
-Update Confidence
-
-↓
-
-Enough Evidence?
-
-├── No → Continue Investigation
-└── Yes → Produce Verdict
-
-↓
-
-Generate Investigation Report
-
-↓
-
-Store Investigation History
+ ↓
+Planning
+ ↓
+Evidence
+ ↓
+Reasoning
+ ↓
+Hypothesis Evolution
+ ↓
+Confidence
+ ↓
+Resolution
+ ↓
+Verification
+ ↓
+Knowledge Capture
 ```
 
-OpsMind continuously builds confidence as evidence is collected rather than immediately generating an answer.
+## Built with OpenAI
 
----
-
-# Demo Scenario
-
-Example Incident
-
-```
-INC-2026-0719-001
-
-Heavy Forwarder stopped forwarding logs
-```
-
-Possible hidden root causes
-
-- Expired client certificate
-- Firewall block
-- outputs.conf misconfiguration
-- Disk full
-- Blocked forwarding queues
-
-The engineer never selects the root cause.
-
-OpsMind discovers it through investigation.
-
----
-
-# Where AI is Used
-
-OpsMind combines deterministic engineering with OpenAI reasoning models.
-
-| Deterministic Components | OpenAI Reasoning |
-|--------------------------|------------------|
-| Evidence collection | Investigation planning |
-| Configuration parsing | Hypothesis generation |
-| Log retrieval | Evidence interpretation |
-| Connector execution | Root cause reasoning |
-| API communication | Natural language reporting |
-
-AI never invents evidence.
-
-It reasons only over evidence collected from enterprise systems.
-
----
-
-# Why You Can Trust the Verdict
-
-OpsMind never reaches a conclusion without evidence.
-
-Every investigation includes:
-
-- Supporting evidence
-- Rejected hypotheses
-- Confidence score
-- Decision trace
-- Investigation report
-
-The final verdict is generated from collected enterprise evidence—not assumptions.
-
----
-
-# Features
-
-- AI Investigation Engine
-- Investigation Planning
-- Multiple Competing Hypotheses
-- Enterprise Evidence Collection
-- Explainable AI
-- Confidence Evolution
-- Decision Trace
-- Investigation Reports
-- Investigation History
-- Scenario Engine
-- Modern Incident Dashboard
-
----
-
-# Architecture
-
-```text
-                    Incident
-
-                        │
-
-                        ▼
-
-             Investigation Planner
-
-                        │
-
-        ┌───────────────┼───────────────┐
-
-        ▼               ▼               ▼
-
- Configuration     Connectivity     Runtime
-
-        ▼               ▼               ▼
-
-             Enterprise Evidence
-
-                        │
-
-                        ▼
-
-           Hypothesis Evaluation
-
-                        │
-
-                        ▼
-
-            Confidence Evolution
-
-                        │
-
-                        ▼
-
-                 Final Verdict
-
-                        │
-
-                        ▼
-
-             Investigation Report
-```
-
----
-
-# Why OpenAI?
-
-OpenAI reasoning models are responsible for:
+GPT-5.6 is used for:
 
 - Investigation planning
-- Hypothesis generation
-- Evidence interpretation
-- Root cause reasoning
-- Report generation
+- Evidence reasoning
+- Hypothesis evolution
+- Executive summaries
 
-OpsMind provides:
+Codex was used throughout development for implementation, refactoring, testing, and documentation.
 
-- Enterprise knowledge
-- Operational telemetry
-- Historical incidents
-- Connector framework
-- Investigation memory
+## Architecture
 
-Together they create an AI Investigation Engine rather than a traditional chatbot.
+![Architecture](docs/images/architecture.png)
 
----
+## Demo Metrics
 
-# Tech Stack
+| Metric | Demo |
+|---|---:|
+| Walkthrough | ~2 minutes |
+| Evidence traceability | Visible |
+| Replay | Yes |
+| Knowledge capture | Automatic |
 
-### Backend
-
-- Python
-- FastAPI
-
-### Frontend
-
-- HTML
-- CSS
-- JavaScript
-
-### Testing
-
-- pytest
-
-### Code Quality
-
-- Ruff
-- Black
-
----
-
-# Repository Structure
-
-```
-backend/
-frontend/
-docs/
-tests/
-data/
-
-README.md
-CHANGELOG.md
-LICENSE
-```
-
----
-
-# Quick Start
-
-## Clone
+## Installation
 
 ```bash
-git clone git@github.com:HungryBrain-bot/opsmind-hackathon.git
+git clone <repo>
 cd opsmind-hackathon
-```
-
-## Create Virtual Environment
-
-```bash
-python3 -m venv .venv
+python -m venv .venv
 source .venv/bin/activate
+pip install -r requirements.txt
 ```
 
-## Upgrade pip
+## Configuration
 
-```bash
-python -m pip install --upgrade pip
+```env
+OPENAI_API_KEY=your_api_key_here
+OPENAI_MODEL=gpt-5.6
+OPSMIND_DEMO_MODE=true
 ```
 
-## Install Dependencies
+## Run
 
 ```bash
-pip install -e ".[dev]"
+uvicorn backend.app.main:app --reload
 ```
 
-## Make Scripts Executable
+## Test
 
 ```bash
-chmod +x run-demo.sh
-
-find . -type f -name "*.sh" -exec chmod +x {} \;
-```
-
-## Run Tests
-
-```bash
+ruff check .
+ruff format --check .
 pytest -q
 ```
 
-Expected:
+## API
 
-```
-23 passed
-```
+- GET /health
+- POST /investigations
+- GET /investigations/{id}
+- GET /investigations/{id}/workspace
 
-## Start OpsMind
+## Judge Guide
 
-```bash
-./run-demo.sh
-```
+1. Problem
+2. Golden Demo
+3. Investigation Workspace
+4. GPT-5.6 reasoning
+5. Knowledge Capture
 
-Open:
+## Roadmap
 
-```
-http://127.0.0.1:8000
-```
+- Multi-agent investigations
+- MCP integrations
+- Cross-incident intelligence
+- Autonomous remediation (human approval)
 
----
+## Why We Built OpsMind
 
-# Demo Walkthrough
+Engineers don't need another chatbot—they need an investigation partner that combines enterprise operational knowledge with OpenAI reasoning.
 
-1. Select an incident
-2. Start Investigation
-3. Watch evidence collection
-4. Observe competing hypotheses
-5. Review confidence evolution
-6. View rejected hypotheses
-7. Review the final verdict
-8. Download the investigation report
-9. Open Investigation History
+## License
 
----
-
-# Screenshots
-
-## Dashboard
-
-![Dashboard](docs/images/dashboard.png)
-
----
-
-## Investigation
-
-![Investigation](docs/images/investigation.png)
-
----
-
-## Final Verdict
-
-![Final Verdict](docs/images/verdict.png)
-
----
-
-## Investigation History
-
-![History](docs/images/history.png)
-
----
-
-# Documentation
-
-| Document | Description |
-|-----------|-------------|
-| ARCHITECTURE.md | System architecture and design |
-| DEMO_GUIDE.md | Demo walkthrough |
-| API.md | REST API reference |
-| CONTRIBUTING.md | Contribution guide |
-| SECURITY.md | Security policy |
-
----
-
-# Troubleshooting
-
-### Permission denied
-
-```bash
-chmod +x run-demo.sh
-```
-
-### pytest not found
-
-```bash
-source .venv/bin/activate
-```
-
-### ModuleNotFoundError
-
-```bash
-pip install -e ".[dev]"
-```
-
-### Port already in use
-
-```bash
-lsof -i :8000
-kill <PID>
-```
-
----
-
-# Roadmap
-
-## Current (v1.6)
-
-- Investigation Engine
-- Investigation Planner
-- Scenario Engine
-- Investigation Reports
-- Investigation History
-
-## Next
-
-- Splunk Connector
-- Microsoft Sentinel Connector
-- Jira Connector
-- Confluence Connector
-
-## Future
-
-- MCP Tool Integration
-- Knowledge Graph
-- Multi-Agent Investigation
-- Autonomous Operations Engineer
-
----
-
-# Contributing
-
-Contributions are welcome.
-
-Please read **CONTRIBUTING.md** before opening issues or pull requests.
-
----
-
-# Security
-
-Please read **SECURITY.md** for vulnerability reporting guidelines.
-
----
-
-# License
-
-Licensed under the Apache License 2.0.
-
----
-
-# Repository Status
-
-| Item | Status |
-|------|--------|
-| Version | v1.6.0 |
-| Status | Hackathon MVP |
-| Tests | Passing |
-| License | Apache 2.0 |
+MIT (recommended)
