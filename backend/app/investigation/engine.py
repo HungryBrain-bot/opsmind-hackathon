@@ -149,9 +149,7 @@ class InvestigationEngine:
                     await self._collect_requirement(result, requirement)
 
                 result.lifecycle_phase = InvestigationLifecyclePhase.REASONING
-                previous = {
-                    item.id: (item.confidence, item.status) for item in result.hypotheses
-                }
+                previous = {item.id: (item.confidence, item.status) for item in result.hypotheses}
                 previous_supporting = {
                     item.id: set(item.supporting_evidence_ids) for item in result.hypotheses
                 }
@@ -424,9 +422,7 @@ class InvestigationEngine:
         result.current_phase = "Resolution intelligence"
         result.progress_percent = 94
         result.resolution_plan = self.resolution.build(result, leading)
-        result.recommended_actions = [
-            item.action for item in result.resolution_plan.actions
-        ]
+        result.recommended_actions = [item.action for item in result.resolution_plan.actions]
         self._timeline(
             result,
             result.current_phase,

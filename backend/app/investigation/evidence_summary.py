@@ -4,7 +4,9 @@ from app.schemas.reasoning import InvestigationFinding
 
 
 class EvidenceSummaryService:
-    def build(self, hypotheses: list[Hypothesis], evidence: list[Evidence]) -> list[InvestigationFinding]:
+    def build(
+        self, hypotheses: list[Hypothesis], evidence: list[Evidence]
+    ) -> list[InvestigationFinding]:
         findings: list[InvestigationFinding] = []
         for hypothesis in hypotheses:
             supporting = [item for item in evidence if hypothesis.id in item.supports]

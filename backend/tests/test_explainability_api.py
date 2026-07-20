@@ -4,6 +4,7 @@ from app.main import app
 
 client = TestClient(app)
 
+
 def _completed_investigation():
     created = client.post(
         "/api/v1/investigations",
@@ -21,6 +22,7 @@ def _completed_investigation():
             return result
         time.sleep(0.05)
     raise AssertionError("Investigation did not finish")
+
 
 def test_timeline_and_notebook():
     result = _completed_investigation()

@@ -7,7 +7,11 @@ from pydantic import BaseModel, Field
 from app.schemas.evidence import Evidence
 from app.schemas.hypothesis import Hypothesis
 from app.schemas.knowledge import KnowledgePattern
-from app.schemas.lifecycle import HypothesisEvolution, InvestigationLifecyclePhase, InvestigationRound
+from app.schemas.lifecycle import (
+    HypothesisEvolution,
+    InvestigationLifecyclePhase,
+    InvestigationRound,
+)
 from app.schemas.resolution import ResolutionPlan
 from app.observability.telemetry import ModelUsage
 

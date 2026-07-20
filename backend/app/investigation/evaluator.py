@@ -15,8 +15,8 @@ class HypothesisEvaluator:
 
             support_score = sum(self._weight(evidence_by_id[item]) for item in supporting)
             contradiction_score = sum(self._weight(evidence_by_id[item]) for item in contradicting)
-            confidence = hypothesis.confidence + (support_score * 0.20) - (
-                contradiction_score * 0.28
+            confidence = (
+                hypothesis.confidence + (support_score * 0.20) - (contradiction_score * 0.28)
             )
             hypothesis.confidence = max(0.02, min(0.98, confidence))
             hypothesis.rejection_reason = None

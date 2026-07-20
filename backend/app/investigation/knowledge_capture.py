@@ -12,9 +12,7 @@ class KnowledgeCaptureService:
         resolution = result.resolution_plan
         actions = [item.action for item in resolution.actions] if resolution else []
         verification = (
-            [item.expected_value for item in resolution.verification_criteria]
-            if resolution
-            else []
+            [item.expected_value for item in resolution.verification_criteria] if resolution else []
         )
         entities = sorted({entity for item in result.evidence for entity in item.entities})
         categories = sorted({item.category.value for item in result.evidence})

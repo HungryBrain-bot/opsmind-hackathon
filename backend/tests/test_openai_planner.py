@@ -57,9 +57,7 @@ def _settings(**overrides: object) -> Settings:
 async def test_openai_planner_returns_validated_structured_plan_and_usage() -> None:
     plan = await _fixture_plan()
     client = FakePlannerClient(deque([PlannerModelResponse(plan, 120, 80)]))
-    planner = OpenAIInvestigationPlanner(
-        _settings(), TOOLS, client_factory=lambda _: client
-    )
+    planner = OpenAIInvestigationPlanner(_settings(), TOOLS, client_factory=lambda _: client)
 
     result = await planner.create_plan(REQUEST)
 
@@ -75,12 +73,8 @@ async def test_openai_planner_retries_semantically_invalid_tool_then_succeeds() 
     invalid = await _fixture_plan()
     invalid.evidence_requirements[0].preferred_tool = "restart_splunk"
     valid = await _fixture_plan()
-    client = FakePlannerClient(
-        deque([PlannerModelResponse(invalid), PlannerModelResponse(valid)])
-    )
-    planner = OpenAIInvestigationPlanner(
-        _settings(), TOOLS, client_factory=lambda _: client
-    )
+    client = FakePlannerClient(deque([PlannerModelResponse(invalid), PlannerModelResponse(valid)]))
+    planner = OpenAIInvestigationPlanner(_settings(), TOOLS, client_factory=lambda _: client)
 
     result = await planner.create_plan(REQUEST)
 
@@ -92,9 +86,7 @@ async def test_openai_planner_retries_semantically_invalid_tool_then_succeeds() 
 
 async def test_openai_planner_falls_back_after_bounded_failures() -> None:
     client = FakePlannerClient(deque([RuntimeError("timeout"), RuntimeError("bad JSON")]))
-    planner = OpenAIInvestigationPlanner(
-        _settings(), TOOLS, client_factory=lambda _: client
-    )
+    planner = OpenAIInvestigationPlanner(_settings(), TOOLS, client_factory=lambda _: client)
 
     plan = await planner.create_plan(REQUEST)
 
@@ -120,9 +112,7 @@ async def test_openai_planner_raises_when_fallback_is_disabled() -> None:
 
 
 def test_prompt_is_versioned_and_contains_runtime_boundaries() -> None:
-    prompt = build_planner_prompt(
-        version="planner-v1", request=REQUEST, available_tools=TOOLS
-    )
+    prompt = build_planner_prompt(version="planner-v1", request=REQUEST, available_tools=TOOLS)
 
     assert prompt.version == "planner-v1"
     assert "Do not produce a verdict" in prompt.system
@@ -132,6 +122,4 @@ def test_prompt_is_versioned_and_contains_runtime_boundaries() -> None:
 
 def test_unknown_prompt_version_is_rejected_before_api_call() -> None:
     with pytest.raises(ValueError, match="Unsupported planner prompt version"):
-        build_planner_prompt(
-            version="planner-v999", request=REQUEST, available_tools=TOOLS
-        )
+        build_planner_prompt(version="planner-v999", request=REQUEST, available_tools=TOOLS)

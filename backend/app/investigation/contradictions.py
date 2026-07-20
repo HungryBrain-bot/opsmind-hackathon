@@ -15,7 +15,11 @@ class ContradictionDetector:
             contradicting = [item for item in evidence if hypothesis.id in item.contradicts]
             if not supporting or not contradicting:
                 continue
-            severity = "high" if any(item.reliability.value == "high" for item in contradicting) else "medium"
+            severity = (
+                "high"
+                if any(item.reliability.value == "high" for item in contradicting)
+                else "medium"
+            )
             results.append(
                 EvidenceContradiction(
                     id=f"C-{len(results) + 1:03d}",

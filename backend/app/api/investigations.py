@@ -33,8 +33,6 @@ def get_engine(
     return InvestigationOrchestrator(engine)
 
 
-
-
 @router.get("/history", response_model=list[InvestigationHistoryItem])
 async def list_investigation_history(
     query: str | None = None,

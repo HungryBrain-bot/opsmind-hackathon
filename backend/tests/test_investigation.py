@@ -1,4 +1,3 @@
-
 from app.core.settings import Settings
 from app.investigation.engine import InvestigationEngine
 from app.investigation.store import InvestigationStore

@@ -5,6 +5,7 @@ from app.schemas.knowledge import KnowledgePattern
 from app.schemas.lifecycle import InvestigationRound
 from app.schemas.resolution import ResolutionPlan
 
+
 class InvestigationReportEvidence(BaseModel):
     id: str
     title: str
@@ -12,6 +13,7 @@ class InvestigationReportEvidence(BaseModel):
     category: str
     reliability: str
     content: str
+
 
 class InvestigationReport(BaseModel):
     report_version: str = "1.0"

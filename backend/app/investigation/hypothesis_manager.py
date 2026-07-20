@@ -50,11 +50,7 @@ class HypothesisManager:
     def _reason(hypothesis: Hypothesis, previous_confidence: float) -> str:
         delta = hypothesis.confidence - previous_confidence
         if delta > 0:
-            return (
-                f"Confidence increased by {delta:.2f} after supporting evidence was evaluated."
-            )
+            return f"Confidence increased by {delta:.2f} after supporting evidence was evaluated."
         if delta < 0:
-            return (
-                f"Confidence decreased by {abs(delta):.2f} after contradictory evidence was evaluated."
-            )
+            return f"Confidence decreased by {abs(delta):.2f} after contradictory evidence was evaluated."
         return "Confidence was unchanged because no new decisive evidence affected this hypothesis."

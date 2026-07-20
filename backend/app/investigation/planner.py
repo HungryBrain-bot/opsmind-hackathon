@@ -206,6 +206,7 @@ def create_planner(settings: Settings, available_tools: list[str]) -> Investigat
         "Expected 'fixture' or 'openai'."
     )
 
+
 def _golden_path_requirements() -> list[EvidenceRequirement]:
     return [
         EvidenceRequirement(

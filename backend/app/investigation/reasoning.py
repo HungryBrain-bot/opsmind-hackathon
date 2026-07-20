@@ -54,7 +54,9 @@ class EvidenceReasoner:
         provider = self.settings.reasoning_provider.strip().lower()
         if provider == "openai" and self.settings.openai_api_key:
             try:
-                return await self._openai(round_number, hypotheses, evidence, deterministic_sufficient)
+                return await self._openai(
+                    round_number, hypotheses, evidence, deterministic_sufficient
+                )
             except Exception as exc:
                 if not self.settings.reasoning_fallback_to_fixture:
                     raise
@@ -176,9 +178,7 @@ class EvidenceReasoner:
         if result.decision.leading_hypothesis_id not in hypothesis_ids:
             raise ValueError("Reasoner selected an unknown leading hypothesis")
         referenced = {
-            evidence_id
-            for finding in result.findings
-            for evidence_id in finding.evidence_ids
+            evidence_id for finding in result.findings for evidence_id in finding.evidence_ids
         }
         referenced.update(item.evidence_id for item in result.assessments)
         unknown = referenced - evidence_ids
