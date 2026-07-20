@@ -180,3 +180,277 @@ Engineers don't need another chatbot.
 They need an investigation partner that understands enterprise systems, reasons over evidence, explains every decision, and makes every future investigation faster.
 
 **OpsMind is building that future.**
+
+## 🖥️ Visual Investigation Workspace
+
+OpsMind is built around a **visual investigation workspace**, not a chat window.
+
+Every investigation becomes a living workspace where evidence, hypotheses, confidence, and decisions evolve together.
+
+---
+
+## Workspace Overview
+
+```mermaid
+flowchart LR
+    A[Incident] --> B[Timeline]
+    B --> C[Evidence Graph]
+    C --> D[Hypothesis Board]
+    D --> E[Confidence Evolution]
+    E --> F[Resolution Intelligence]
+    F --> G[Verification]
+    G --> H[Knowledge Capture]
+```
+
+---
+
+## Workspace Components
+
+| Component | Purpose |
+|-----------|---------|
+| 🕒 Timeline | Shows every investigation step chronologically |
+| 🕸️ Evidence Graph | Visualizes relationships between evidence |
+| 🧠 Hypothesis Board | Tracks competing root-cause theories |
+| 📈 Confidence Evolution | Shows confidence changing over time |
+| 🛠️ Resolution Intelligence | AI-assisted remediation guidance |
+| ✅ Verification Dashboard | Confirms the incident is actually resolved |
+
+Together these views allow engineers to understand **how** OpsMind reached a conclusion—not just **what** the conclusion was.
+
+---
+
+# Workspace Preview
+
+### Dashboard
+
+![Dashboard](docs/images/dashboard.png)
+
+---
+
+### Investigation Workspace
+
+![Workspace](docs/images/workspace.png)
+
+---
+
+### Evidence Graph
+
+![Evidence Graph](docs/images/graph.png)
+
+---
+
+### Investigation Timeline
+
+![Timeline](docs/images/timeline.png)
+
+---
+
+### Confidence Evolution
+
+![Confidence](docs/images/confidence.png)
+
+---
+
+### Hypothesis Board
+
+![Hypothesis Board](docs/images/hypothesis.png)
+
+---
+
+### Resolution Intelligence
+
+![Resolution](docs/images/resolution.png)
+
+---
+
+### Verification Dashboard
+
+![Verification](docs/images/verification.png)
+
+---
+
+## Multi-Round Investigation Engine
+
+Unlike traditional assistants that stop after one answer, OpsMind reasons iteratively.
+
+```mermaid
+flowchart TD
+A[Collect Evidence]
+-->B[Generate Hypotheses]
+-->C[Evaluate Evidence]
+-->D{Enough Evidence?}
+
+D -- No --> A
+D -- Yes --> E[Evidence-backed Verdict]
+```
+
+Each reasoning round can:
+
+- Collect additional telemetry
+- Refine hypotheses
+- Reject weak explanations
+- Increase or decrease confidence
+- Record every decision for replay
+
+---
+
+## Resolution Intelligence
+
+Finding the root cause is only part of the investigation.
+
+OpsMind also produces structured remediation guidance.
+
+```mermaid
+flowchart LR
+RootCause --> Resolution
+Resolution --> Validation
+Validation --> Verification
+Verification --> Knowledge
+```
+
+Every recommendation is linked back to the evidence that justified it.
+
+---
+
+## Verification
+
+OpsMind treats verification as a first-class investigation stage.
+
+Before an incident is considered resolved it can verify:
+
+- Service health
+- Data ingestion
+- Alert recovery
+- Queue status
+- Connectivity
+- Platform health
+
+This helps reduce false recoveries.
+
+---
+
+## Knowledge Capture
+
+Every completed investigation becomes organizational knowledge.
+
+Captured artifacts include:
+
+- Incident summary
+- Evidence collected
+- Final verdict
+- Resolution
+- Verification results
+- Lessons learned
+
+Future investigations benefit from everything learned previously.
+
+---
+
+## Investigation Playback
+
+Every investigation is replayable from start to finish.
+
+Benefits include:
+
+- Explainability
+- Auditability
+- Training
+- Incident reviews
+- Faster onboarding
+
+No reasoning step is hidden.
+
+---
+
+## Built with OpenAI
+
+OpsMind combines deterministic engineering with OpenAI reasoning.
+
+| Deterministic Platform | OpenAI Reasoning |
+|------------------------|------------------|
+| Evidence collection | Investigation planning |
+| Connector execution | Hypothesis generation |
+| Configuration parsing | Evidence interpretation |
+| Log & telemetry retrieval | Root cause reasoning |
+| Verification | Executive summaries |
+
+> OpenAI never invents evidence. It reasons only over enterprise evidence collected by OpsMind.
+
+---
+
+## High-Level Architecture
+
+```mermaid
+flowchart LR
+
+subgraph Enterprise
+A[Splunk]
+B[Microsoft Sentinel]
+C[Jira]
+D[Runbooks]
+E[Configuration Files]
+F[Cloud APIs]
+end
+
+subgraph OpsMind
+G[Investigation Engine]
+H[Evidence Store]
+I[Reasoning Engine]
+J[Visual Workspace]
+K[Knowledge Base]
+end
+
+subgraph OpenAI
+L[GPT-5.6]
+end
+
+A --> G
+B --> G
+C --> G
+D --> G
+E --> G
+F --> G
+
+G --> H
+H --> L
+L --> I
+I --> J
+J --> K
+```
+
+---
+
+## Investigation Pipeline
+
+```mermaid
+sequenceDiagram
+
+participant Engineer
+participant OpsMind
+participant Enterprise
+participant OpenAI
+
+Engineer->>OpsMind: Start Investigation
+OpsMind->>Enterprise: Collect evidence
+Enterprise-->>OpsMind: Logs & telemetry
+OpsMind->>OpenAI: Reason over evidence
+OpenAI-->>OpsMind: Updated hypotheses
+OpsMind->>Enterprise: Gather additional evidence
+Enterprise-->>OpsMind: New findings
+OpsMind->>OpenAI: Final reasoning
+OpenAI-->>OpsMind: Evidence-backed verdict
+OpsMind-->>Engineer: Investigation report
+```
+
+---
+
+## Why This Workspace Matters
+
+Traditional tools show data.
+
+Traditional chatbots generate answers.
+
+**OpsMind visualizes the entire investigation.**
+
+Engineers can inspect every hypothesis, every piece of evidence, every confidence update, and every reasoning step before accepting the final verdict.
+
