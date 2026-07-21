@@ -661,19 +661,6 @@ CHANGELOG.md
 
 ---
 
-## 🏆 Judge Guide (5 Minutes)
-
-| Time | Demonstration |
-|------|---------------|
-| 0:00–0:45 | Problem statement |
-| 0:45–1:30 | Start investigation |
-| 1:30–2:30 | Workspace & reasoning |
-| 2:30–3:30 | Evidence graph & confidence |
-| 3:30–4:30 | Resolution & verification |
-| 4:30–5:00 | Knowledge capture & vision |
-
----
-
 ## 📖 Documentation
 
 | Document | Purpose |
