@@ -25,8 +25,16 @@
 
 ## 🎬 Golden Demo
 
+### Demo Mode
+
 <p align="center">
 <img src="docs/images/demo.gif" width="900" alt="OpsMind Demo"/>
+</p>
+
+### Open AI Planner Mode
+
+<p align="center">
+<img src="docs/images/demo1.gif" width="900" alt="OpsMind AI Demo"/>
 </p>
 
 | Capability | Demo |
@@ -161,13 +169,17 @@ The engineer never selects the root cause.
 
 ## Investigation Engine
 
-Every reasoning round:
+OpsMind separates **AI planning** from **deterministic investigation execution**.
 
-- Collects new evidence
-- Refines hypotheses
-- Rejects weak explanations
-- Updates confidence
-- Preserves a complete reasoning trace
+The investigation begins with an AI-generated investigation plan that identifies the most likely hypotheses and the evidence required to validate or reject them.
+
+OpsMind then executes that plan deterministically by:
+
+- Collecting enterprise evidence
+- Correlating findings across sources
+- Tracking investigation confidence
+- Rejecting unsupported hypotheses
+- Preserving a complete investigation trace
 
 The investigation continues until sufficient trustworthy evidence exists to defend the final conclusion.
 
@@ -269,28 +281,32 @@ Together these views allow engineers to understand **how** OpsMind reached a con
 
 ---
 
-## Multi-Round Investigation Engine
+## AI-Planned Investigation Engine
 
-Unlike traditional assistants that stop after one answer, OpsMind reasons iteratively.
+Unlike traditional assistants that immediately produce an answer, OpsMind first generates a structured investigation plan using OpenAI. The investigation engine then executes that plan through deterministic evidence collection, correlation, confidence tracking, and sufficiency evaluation.
 
 ```mermaid
 flowchart TD
-A[Collect Evidence]
--->B[Generate Hypotheses]
--->C[Evaluate Evidence]
--->D{Enough Evidence?}
 
-D -- No --> A
-D -- Yes --> E[Evidence-backed Verdict]
+A[Engineer Starts Investigation]
+--> B[OpenAI Generates Investigation Plan]
+--> C[OpsMind Investigation Engine]
+--> D[Collect Enterprise Evidence]
+--> E[Correlate Findings]
+--> F[Update Confidence]
+--> G{Enough Evidence?}
+
+G -- No --> D
+G -- Yes --> H[Evidence-backed Investigation Report]
 ```
 
-Each reasoning round can:
+Each investigation round can:
 
-- Collect additional telemetry
-- Refine hypotheses
-- Reject weak explanations
-- Increase or decrease confidence
-- Record every decision for replay
+- Collect additional enterprise evidence
+- Correlate findings from multiple sources
+- Reject unsupported hypotheses
+- Update investigation confidence
+- Record every investigation step for replay and auditing
 
 ---
 
@@ -392,17 +408,18 @@ E[Configuration Files]
 F[Cloud APIs]
 end
 
+subgraph OpenAI
+L[OpenAI Planner]
+end
+
 subgraph OpsMind
 G[Investigation Engine]
 H[Evidence Store]
-I[Reasoning Engine]
 J[Visual Workspace]
 K[Knowledge Base]
 end
 
-subgraph OpenAI
-L[GPT-5.6]
-end
+L --> G
 
 A --> G
 B --> G
@@ -412,9 +429,7 @@ E --> G
 F --> G
 
 G --> H
-H --> L
-L --> I
-I --> J
+H --> J
 J --> K
 ```
 
@@ -431,15 +446,18 @@ participant Enterprise
 participant OpenAI
 
 Engineer->>OpsMind: Start Investigation
-OpsMind->>Enterprise: Collect evidence
-Enterprise-->>OpsMind: Logs & telemetry
-OpsMind->>OpenAI: Reason over evidence
-OpenAI-->>OpsMind: Updated hypotheses
-OpsMind->>Enterprise: Gather additional evidence
-Enterprise-->>OpsMind: New findings
-OpsMind->>OpenAI: Final reasoning
-OpenAI-->>OpsMind: Evidence-backed verdict
-OpsMind-->>Engineer: Investigation report
+OpsMind->>OpenAI: Generate Investigation Plan
+OpenAI-->>OpsMind: Structured Investigation Plan
+
+loop Investigation Rounds
+OpsMind->>Enterprise: Collect Evidence
+Enterprise-->>OpsMind: Logs, Telemetry & Configuration
+OpsMind->>OpsMind: Correlate Findings
+OpsMind->>OpsMind: Update Confidence
+OpsMind->>OpsMind: Evaluate Sufficiency
+end
+
+OpsMind-->>Engineer: Evidence-backed Investigation Report
 ```
 
 ---
@@ -528,11 +546,11 @@ First configure your API key:
 export OPENAI_API_KEY="sk-your-api-key"
 ```
 
-or create a `.env` file:
+or 
 
-```env
-OPENAI_API_KEY=sk-your-api-key
-OPENAI_MODEL=gpt-5.6
+```bash
+export OPENAI_API_KEY=sk-proj-xxxxxxxxxxxxxxxx
+./run-ai.sh
 ```
 
 Then start AI mode:
