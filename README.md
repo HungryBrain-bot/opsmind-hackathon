@@ -513,7 +513,7 @@ OpsMind supports two execution modes.
 
 ---
 
-### 1. Golden Demo (Recommended)
+### 1. Golden Demo 
 
 Runs the bundled investigation without requiring an OpenAI API key.
 
@@ -536,7 +536,7 @@ This mode is ideal for:
 
 ---
 
-### 2. AI Investigation Mode
+### 2. AI Investigation Mode (Recommended)
 
 Runs OpsMind using OpenAI reasoning models.
 
